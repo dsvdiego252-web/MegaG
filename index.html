@@ -246,6 +246,9 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .badge.warn{background:var(--warn-soft); color:var(--warn); border:1px solid var(--warn-soft-border);}
 .badge.bad{background:var(--bad-soft); color:var(--bad); border:1px solid var(--bad-soft-border);}
 .badge.neutral{background:var(--surface-3); color:var(--text-muted); border:1px solid var(--border);}
+.badge.chip{cursor:pointer; user-select:none; border-width:1px; border-style:solid; opacity:.55; transition:opacity .1s;}
+.badge.chip:hover{opacity:.85;}
+.badge.chip.active{opacity:1; box-shadow:0 0 0 2px var(--surface) inset, 0 0 0 3px currentColor;}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;}
 
 /* filiais list */
@@ -360,6 +363,10 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
     <div class="helptext" id="consolidadoNote" style="display:none; margin-bottom:12px; padding:9px 12px; border:1px solid var(--accent-soft-border); background:var(--accent-soft); border-radius:8px; color:var(--text);">
       Modo Resumo: soma automaticamente os lançamentos de todas as lojas por CFOP, somente leitura. Para editar, selecione uma loja específica.
     </div>
+    <div class="field" style="margin-bottom:14px; max-width:220px;">
+      <label for="filtroCfopLancamentos">Filtrar por CFOP</label>
+      <input type="text" id="filtroCfopLancamentos" class="mono" placeholder="ex.: 1152" maxlength="4">
+    </div>
     <div class="card">
       <div class="card-head">
         <h2>Entradas — Valores Fiscais</h2>
@@ -426,6 +433,7 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
         <h2>Classificação de CFOP — filial e período selecionados</h2>
         <div class="desc">Cada lançamento é confrontado com o comportamento esperado do CFOP (direito a crédito, ICMS-ST, transferência, uso e consumo, etc.).</div>
       </div>
+      <div id="classifFiltros" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;"></div>
       <div class="table-wrap">
         <table id="tblClassif">
           <thead>
@@ -451,52 +459,30 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
   <div class="panel" id="panel-reconciliacao">
     <div class="card">
       <div class="card-head">
-        <h2>Transferências dentro do mesmo estado</h2>
-        <div class="desc">CFOP 1.151/1.152/1.408/1.409 (entrada) × 5.151/5.152/5.408/5.409 (saída) de <b>todas as filiais cadastradas</b>. Desde a LC 204/2023 não há incidência de ICMS nessas transferências — a comparação é só pelo valor contábil, e o total global deve bater.</div>
+        <h2>Transferências — Matriz × Filiais</h2>
+        <div class="desc">Por filial, no período selecionado: transferência dentro do estado (CFOP 1.15x/1.40x × 5.15x/5.40x — sem ICMS, LC 204/2023) e transferência interestadual (CFOP 2.15x/2.40x × 6.15x/6.40x — gera débito de ICMS na saída de origem e crédito na entrada de destino).</div>
       </div>
-      <div class="recon-grand" id="reconGrandEstado"></div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-bottom:14px;">
+        <div class="recon-grand" id="reconGrandEstado"></div>
+        <div class="recon-grand" id="reconGrandInterestadual"></div>
+      </div>
       <div class="table-wrap">
-        <table id="tblReconFiliaisEstado">
+        <table id="tblReconFiliais">
           <thead>
             <tr>
               <th>Filial</th>
-              <th class="num">Saídas de transferência (valor contábil)</th>
-              <th class="num">Entradas de transferência (valor contábil)</th>
-              <th class="num">Saldo líquido</th>
-              <th>Leitura</th>
+              <th class="num">Saída transf. mesmo estado</th>
+              <th class="num">Entrada transf. mesmo estado</th>
+              <th class="num">Saída transf. fora do estado</th>
+              <th class="num">Entrada transf. fora do estado</th>
+              <th class="num">ICMS débito (saída fora do estado)</th>
+              <th class="num">ICMS crédito (entrada fora do estado)</th>
             </tr>
           </thead>
           <tbody></tbody>
+          <tfoot></tfoot>
         </table>
       </div>
-      <div class="helptext">Saldo líquido positivo = a filial remeteu mais do que recebeu (normal para Matriz/centro de distribuição). Saldo negativo = recebeu mais do que remeteu (normal para uma filial de venda). O que importa é o <b>total geral</b> acima fechar em zero.</div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <h2>Transferências interestaduais</h2>
-        <div class="desc">CFOP 2.151/2.152/2.408/2.409 (entrada) × 6.151/6.152/6.408/6.409 (saída). Diferente da transferência dentro do estado, a transferência para filial de <b>outro estado gera débito de ICMS na origem</b>, e a filial destinatária deve tomar o <b>crédito correspondente na entrada</b> — a comparação aqui é por valor contábil, base de cálculo e imposto ao mesmo tempo.</div>
-      </div>
-      <div class="recon-grand" id="reconGrandInterestadual"></div>
-      <div class="table-wrap">
-        <table id="tblReconFiliaisInterestadual">
-          <thead>
-            <tr>
-              <th>Filial</th>
-              <th class="num">Saída — contábil</th>
-              <th class="num">Saída — base</th>
-              <th class="num">Saída — débito</th>
-              <th class="num">Entrada — contábil</th>
-              <th class="num">Entrada — base</th>
-              <th class="num">Entrada — crédito</th>
-              <th class="num">Saldo do débito/crédito</th>
-              <th>Leitura</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="helptext">Saldo do débito/crédito = débito gerado nas saídas desta filial menos crédito tomado nas entradas desta filial. No grupo todo, o <b>total de débito gerado nas saídas interestaduais deve ser igual ao total de crédito tomado nas entradas</b> — é o ICMS que "muda de UF" na transferência.</div>
     </div>
   </div>
 
@@ -677,7 +663,7 @@ var SEED_FILIAIS = [
   {id:"filial_0002", nome:"Filial 0002", uf:"", cnpj:"19.043.440/0002-35", ie:"720035126118"},
   {id:"filial_0003", nome:"Filial 0003", uf:"MG", cnpj:"19.043.440/0003-16", ie:"0033160300030"},
   {id:"filial_zl", nome:"Filial ZL 004", uf:"", cnpj:"19.043.440/0004-05", ie:"130721189116"},
-  {id:"filial_0005", nome:"Filial 0005", uf:"", cnpj:"19.043.440/0005-88", ie:"181589998117"}
+  {id:"filial_0005", nome:"Filial 0005", uf:"SP", cnpj:"19.043.440/0005-88", ie:"181589998117"}
 ];
 var SEED_PERIODOS = [
   {id:"2026-08", label:"Agosto/2026"}
@@ -857,6 +843,10 @@ function mergeSeeds(state){
   // migração leve: nome antigo da Filial ZL, só se o usuário não tiver renomeado
   var zl = state.filiais.find(function(f){return f.id==="filial_zl";});
   if(zl && zl.nome === "Filial ZL") zl.nome = "Filial ZL 004";
+
+  // migração leve: UF da Filial 0005 (confirmada como SP), só se ainda estiver em branco
+  var f5 = state.filiais.find(function(f){return f.id==="filial_0005";});
+  if(f5 && !f5.uf) f5.uf = "SP";
 }
 
 var state = null;
@@ -1054,6 +1044,8 @@ function buildRow(tableBody, item, idx, tipo, readOnly){
   tableBody.appendChild(tr);
 }
 
+var filtroCfopLancamentos = "";
+
 function renderLancTable(tipo){
   var reg = currentReg();
   var list = reg[tipo];
@@ -1062,9 +1054,19 @@ function renderLancTable(tipo){
   var tbody = table.querySelector("tbody");
   var tfoot = table.querySelector("tfoot");
   tbody.innerHTML = "";
-  list.forEach(function(item, idx){ buildRow(tbody, item, idx, tipo, readOnly); });
 
-  var totals = list.reduce(function(acc,r){
+  var filtro = filtroCfopLancamentos.trim();
+  var indices = list.map(function(_,i){ return i; });
+  if(filtro){
+    indices = indices.filter(function(i){ return (list[i].cfop||"").indexOf(filtro) > -1; });
+  }
+  indices.forEach(function(idx){ buildRow(tbody, list[idx], idx, tipo, readOnly); });
+  if(filtro && indices.length === 0){
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-faint)">Nenhum CFOP contém "'+escapeHtml(filtro)+'".</td></tr>';
+  }
+
+  var totals = indices.reduce(function(acc,i){
+    var r = list[i];
     acc.contabil += parseNumberBR(r.contabil);
     acc.base += parseNumberBR(r.base);
     acc.imposto += parseNumberBR(r.imposto);
@@ -1073,7 +1075,7 @@ function renderLancTable(tipo){
     return acc;
   }, {contabil:0,base:0,imposto:0,isenta:0,outras:0});
 
-  tfoot.innerHTML = '<tr><td colspan="2">Total</td>' +
+  tfoot.innerHTML = '<tr><td colspan="2">Total'+(filtro?" (filtrado)":"")+'</td>' +
     '<td class="num">'+fmtBRL(totals.contabil)+'</td>' +
     '<td class="num">'+fmtBRL(totals.base)+'</td>' +
     '<td class="num">'+fmtBRL(totals.imposto)+'</td>' +
@@ -1204,6 +1206,27 @@ function badgeHtml(status){
 }
 
 /* ===================== rendering: classificação ===================== */
+var filtroClassifStatus = null; // null = todos; ou "ok"/"warn"/"bad"/"neutral"
+var STATUS_LABELS = {ok:"OK", warn:"Atenção", bad:"Revisar", neutral:"Sem movimento"};
+
+function renderClassifFiltros(counts){
+  var wrap = document.getElementById("classifFiltros");
+  var ordem = ["bad","warn","ok","neutral"];
+  var total = counts.bad+counts.warn+counts.ok+counts.neutral;
+  var html = '<span class="badge chip'+(filtroClassifStatus===null?" active":"")+'" data-status="" style="border-color:var(--border-strong); color:var(--text-muted);"><span class="dot"></span>Todos ('+total+')</span>';
+  ordem.forEach(function(st){
+    var cls = st==="neutral" ? "neutral" : st;
+    html += '<span class="badge chip '+cls+(filtroClassifStatus===st?" active":"")+'" data-status="'+st+'"><span class="dot"></span>'+STATUS_LABELS[st]+' ('+counts[st]+')</span>';
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll(".badge.chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      filtroClassifStatus = chip.dataset.status || null;
+      renderClassificacao();
+    });
+  });
+}
+
 function renderClassificacao(){
   var reg = currentReg();
   var tbody = document.querySelector("#tblClassif tbody");
@@ -1212,23 +1235,39 @@ function renderClassificacao(){
   reg.entradas.forEach(function(r){ rows.push({bloco:"Entrada", r:r}); });
   reg.saidas.forEach(function(r){ rows.push({bloco:"Saída", r:r}); });
 
-  rows.forEach(function(row){
+  var counts = {ok:0, warn:0, bad:0, neutral:0};
+  var classified = rows.map(function(row){
     var r = row.r;
     var info = cfopInfo(r.cfop);
     var base = parseNumberBR(r.base), imp = parseNumberBR(r.imposto), cont = parseNumberBR(r.contabil);
     var aliq = base>0 ? (imp/base*100) : NaN;
     var cl = classifyRow(r.cfop, cont, base, imp);
+    counts[cl.status] = (counts[cl.status]||0) + 1;
+    return {row:row, info:info, base:base, imp:imp, cont:cont, aliq:aliq, cl:cl};
+  });
+
+  renderClassifFiltros(counts);
+
+  var visiveis = filtroClassifStatus ? classified.filter(function(x){ return x.cl.status === filtroClassifStatus; }) : classified;
+
+  if(visiveis.length === 0){
+    tbody.innerHTML = '<tr><td colspan="9" style="color:var(--text-faint)">Nenhum lançamento nessa situação.</td></tr>';
+    return;
+  }
+
+  visiveis.forEach(function(x){
+    var r = x.row.r;
     var tr = document.createElement("tr");
     tr.innerHTML =
-      '<td>'+row.bloco+'</td>' +
+      '<td>'+x.row.bloco+'</td>' +
       '<td class="mono">'+escapeHtml(r.cfop||"—")+'</td>' +
-      '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : "Não catalogado")+'</td>' +
-      '<td class="num">'+fmtBRL(cont)+'</td>' +
-      '<td class="num">'+fmtBRL(base)+'</td>' +
-      '<td class="num">'+fmtBRL(imp)+'</td>' +
-      '<td class="num">'+(isFinite(aliq)?fmtPct(aliq):"—")+'</td>' +
-      '<td>'+badgeHtml(cl.status)+'</td>' +
-      '<td class="cfop-desc" style="max-width:340px">'+escapeHtml(cl.motivo)+'</td>';
+      '<td class="cfop-desc">'+(x.info ? escapeHtml(x.info.d) : "Não catalogado")+'</td>' +
+      '<td class="num">'+fmtBRL(x.cont)+'</td>' +
+      '<td class="num">'+fmtBRL(x.base)+'</td>' +
+      '<td class="num">'+fmtBRL(x.imp)+'</td>' +
+      '<td class="num">'+(isFinite(x.aliq)?fmtPct(x.aliq):"—")+'</td>' +
+      '<td>'+badgeHtml(x.cl.status)+'</td>' +
+      '<td class="cfop-desc" style="max-width:340px">'+escapeHtml(x.cl.motivo)+'</td>';
     tbody.appendChild(tr);
   });
 }
@@ -1242,89 +1281,60 @@ function sumTransfer(reg, tipo, codes, campo){
   }, 0);
 }
 
-function renderReconciliacaoEstado(){
-  var periodo = state.selPeriodo;
-  var totalOut = 0, totalIn = 0;
-  var rowsHtml = "";
-  state.filiais.forEach(function(f){
-    var reg = regFor(f.id, periodo);
-    var out = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO);
-    var inn = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO);
-    totalOut += out; totalIn += inn;
-    var saldo = out - inn;
-    var leitura = saldo === 0 ? "Sem transferências no período (ou entradas = saídas)" :
-      (saldo > 0 ? "Remeteu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que recebeu — normal para Matriz/centro de distribuição" : "Recebeu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que remeteu — normal para uma filial de venda");
-    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
-      '<td class="num">'+fmtBRL(out)+'</td>' +
-      '<td class="num">'+fmtBRL(inn)+'</td>' +
-      '<td class="num">'+fmtBRL(saldo)+'</td>' +
-      '<td>'+escapeHtml(leitura)+'</td></tr>';
-  });
-  document.querySelector("#tblReconFiliaisEstado tbody").innerHTML = rowsHtml || '<tr><td colspan="5" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
-
-  var diff = totalOut - totalIn;
-  var ok = Math.abs(diff) < 0.01;
-  var grand = document.getElementById("reconGrandEstado");
-  grand.className = "recon-grand " + (ok ? "ok" : "bad");
-  grand.innerHTML =
-    '<div><div class="lbl">Total saídas (contábil)</div><div class="big">R$ '+fmtBRL(totalOut)+'</div></div>' +
-    '<div><div class="lbl">Total entradas (contábil)</div><div class="big">R$ '+fmtBRL(totalIn)+'</div></div>' +
-    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(ok?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diff)+'</div></div>' +
-    '<div>'+badgeHtml(ok?"ok":"bad")+'<div style="font-size:12px;color:var(--text-muted);margin-top:4px;max-width:260px">'+
-      (ok ? "As transferências dentro do estado entre as filiais cadastradas neste período estão batendo."
-          : "Diferença encontrada — pode indicar filial faltando cadastrar/lançar, transferência em trânsito (mercadoria ainda não recebida) ou erro de digitação em uma das pontas.")+
-    '</div></div>';
-  return ok;
-}
-
-function renderReconciliacaoInterestadual(){
-  var periodo = state.selPeriodo;
-  var totalOutCont=0, totalOutBase=0, totalOutImp=0, totalInCont=0, totalInBase=0, totalInImp=0;
-  var rowsHtml = "";
-  state.filiais.forEach(function(f){
-    var reg = regFor(f.id, periodo);
-    var outCont = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "contabil");
-    var outBase = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "base");
-    var outImp  = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "imposto");
-    var inCont = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "contabil");
-    var inBase = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "base");
-    var inImp  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "imposto");
-    totalOutCont+=outCont; totalOutBase+=outBase; totalOutImp+=outImp;
-    totalInCont+=inCont; totalInBase+=inBase; totalInImp+=inImp;
-    var saldoImp = outImp - inImp;
-    var leitura = (outCont===0 && inCont===0) ? "Sem transferência interestadual no período" :
-      (saldoImp === 0 ? "Débito gerado nas saídas = crédito tomado nas entradas" :
-       (saldoImp > 0 ? "Gerou R$ "+fmtBRL(Math.abs(saldoImp))+" a mais de débito do que tomou de crédito" : "Tomou R$ "+fmtBRL(Math.abs(saldoImp))+" a mais de crédito do que gerou de débito"));
-    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
-      '<td class="num">'+fmtBRL(outCont)+'</td>' +
-      '<td class="num">'+fmtBRL(outBase)+'</td>' +
-      '<td class="num">'+fmtBRL(outImp)+'</td>' +
-      '<td class="num">'+fmtBRL(inCont)+'</td>' +
-      '<td class="num">'+fmtBRL(inBase)+'</td>' +
-      '<td class="num">'+fmtBRL(inImp)+'</td>' +
-      '<td class="num">'+fmtBRL(saldoImp)+'</td>' +
-      '<td>'+escapeHtml(leitura)+'</td></tr>';
-  });
-  document.querySelector("#tblReconFiliaisInterestadual tbody").innerHTML = rowsHtml || '<tr><td colspan="9" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
-
-  var diffImp = totalOutImp - totalInImp;
-  var ok = Math.abs(diffImp) < 0.01;
-  var grand = document.getElementById("reconGrandInterestadual");
-  grand.className = "recon-grand " + (ok ? "ok" : "bad");
-  grand.innerHTML =
-    '<div><div class="lbl">Débito gerado nas saídas</div><div class="big">R$ '+fmtBRL(totalOutImp)+'</div></div>' +
-    '<div><div class="lbl">Crédito tomado nas entradas</div><div class="big">R$ '+fmtBRL(totalInImp)+'</div></div>' +
-    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(ok?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffImp)+'</div></div>' +
-    '<div>'+badgeHtml(ok?"ok":"bad")+'<div style="font-size:12px;color:var(--text-muted);margin-top:4px;max-width:280px">'+
-      (ok ? "O débito de ICMS gerado nas transferências interestaduais bate com o crédito tomado nas filiais de destino."
-          : "Diferença encontrada — o débito gerado numa ponta não está batendo com o crédito tomado na outra. Confira se a filial de destino registrou o crédito pela mesma base/alíquota da saída, ou se falta lançar alguma ponta.")+
-    '</div></div>';
-  return ok;
-}
-
 function renderReconciliacao(){
-  var okEstado = renderReconciliacaoEstado();
-  var okInter = renderReconciliacaoInterestadual();
+  var periodo = state.selPeriodo;
+  var totais = {outEstado:0, inEstado:0, outInter:0, inInter:0, icmsDeb:0, icmsCred:0};
+  var rowsHtml = "";
+
+  state.filiais.forEach(function(f){
+    var reg = regFor(f.id, periodo);
+    var outEstado = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO, "contabil");
+    var inEstado  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO, "contabil");
+    var outInter  = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "contabil");
+    var inInter   = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "contabil");
+    var icmsDeb   = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "imposto");
+    var icmsCred  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "imposto");
+    totais.outEstado += outEstado; totais.inEstado += inEstado;
+    totais.outInter += outInter; totais.inInter += inInter;
+    totais.icmsDeb += icmsDeb; totais.icmsCred += icmsCred;
+    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
+      '<td class="num">'+fmtBRL(outEstado)+'</td>' +
+      '<td class="num">'+fmtBRL(inEstado)+'</td>' +
+      '<td class="num">'+fmtBRL(outInter)+'</td>' +
+      '<td class="num">'+fmtBRL(inInter)+'</td>' +
+      '<td class="num">'+fmtBRL(icmsDeb)+'</td>' +
+      '<td class="num">'+fmtBRL(icmsCred)+'</td></tr>';
+  });
+
+  document.querySelector("#tblReconFiliais tbody").innerHTML = rowsHtml || '<tr><td colspan="7" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
+  document.querySelector("#tblReconFiliais tfoot").innerHTML = '<tr><td>Totais</td>' +
+    '<td class="num">'+fmtBRL(totais.outEstado)+'</td>' +
+    '<td class="num">'+fmtBRL(totais.inEstado)+'</td>' +
+    '<td class="num">'+fmtBRL(totais.outInter)+'</td>' +
+    '<td class="num">'+fmtBRL(totais.inInter)+'</td>' +
+    '<td class="num">'+fmtBRL(totais.icmsDeb)+'</td>' +
+    '<td class="num">'+fmtBRL(totais.icmsCred)+'</td></tr>';
+
+  var diffEstado = totais.outEstado - totais.inEstado;
+  var okEstado = Math.abs(diffEstado) < 0.01;
+  var grandEstado = document.getElementById("reconGrandEstado");
+  grandEstado.className = "recon-grand " + (okEstado ? "ok" : "bad");
+  grandEstado.innerHTML =
+    '<div><div class="lbl">Mesmo estado — saída</div><div class="big">R$ '+fmtBRL(totais.outEstado)+'</div></div>' +
+    '<div><div class="lbl">Mesmo estado — entrada</div><div class="big">R$ '+fmtBRL(totais.inEstado)+'</div></div>' +
+    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(okEstado?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffEstado)+'</div></div>' +
+    '<div>'+badgeHtml(okEstado?"ok":"bad")+'</div>';
+
+  var diffInter = totais.icmsDeb - totais.icmsCred;
+  var okInter = Math.abs(diffInter) < 0.01;
+  var grandInter = document.getElementById("reconGrandInterestadual");
+  grandInter.className = "recon-grand " + (okInter ? "ok" : "bad");
+  grandInter.innerHTML =
+    '<div><div class="lbl">Fora do estado — ICMS débito</div><div class="big">R$ '+fmtBRL(totais.icmsDeb)+'</div></div>' +
+    '<div><div class="lbl">Fora do estado — ICMS crédito</div><div class="big">R$ '+fmtBRL(totais.icmsCred)+'</div></div>' +
+    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(okInter?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffInter)+'</div></div>' +
+    '<div>'+badgeHtml(okInter?"ok":"bad")+'</div>';
+
   return okEstado && okInter;
 }
 
@@ -1536,6 +1546,11 @@ function initTabs(){
 function initControls(){
   document.getElementById("selFilial").addEventListener("change", function(e){
     state.selFilial = e.target.value; saveState(); renderCompanyLine(); renderAll();
+  });
+  document.getElementById("filtroCfopLancamentos").addEventListener("input", function(e){
+    filtroCfopLancamentos = e.target.value;
+    renderLancTable("entradas");
+    renderLancTable("saidas");
   });
   document.getElementById("selPeriodo").addEventListener("change", function(e){
     state.selPeriodo = e.target.value; saveState(); renderCompanyLine(); renderAll();
