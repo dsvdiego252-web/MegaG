@@ -251,16 +251,6 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .badge.chip.active{opacity:1; box-shadow:0 0 0 2px var(--surface) inset, 0 0 0 3px currentColor;}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;}
 
-/* filiais list */
-.filiais-list{display:flex; flex-direction:column; gap:8px;}
-.filial-row{
-  display:flex; align-items:center; gap:10px; padding:8px 10px;
-  border:1px solid var(--border); border-radius:8px; background:var(--surface-2);
-  flex-wrap:wrap;
-}
-.filial-row input{flex:1; min-width:110px;}
-.filial-row .tag{font-size:10.5px; padding:2px 7px; border-radius:5px; background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-soft-border); font-weight:700; text-transform:uppercase;}
-
 /* reconciliation */
 .recon-grand{
   display:flex; align-items:center; gap:22px; flex-wrap:wrap;
@@ -319,14 +309,6 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
           <label for="selPeriodo">Período</label>
           <select id="selPeriodo"></select>
         </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button class="btn sm" id="btnNovoPeriodo">+ Período</button>
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button class="btn sm" id="btnGerenciarFiliais">Gerenciar filiais</button>
-        </div>
         <div class="spacer"></div>
         <div class="field">
           <label>&nbsp;</label>
@@ -347,25 +329,14 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
     </div>
   </div>
 
-  <!-- FILIAIS MODAL (inline panel, not a real modal to keep it simple) -->
-  <div class="card" id="painelFiliais" style="display:none;">
-    <div class="card-head">
-      <h2>Filiais cadastradas</h2>
-      <div class="desc">Cadastre a Matriz e cada filial para poder cruzar as transferências entre elas.</div>
-      <div class="actions"><button class="btn sm primary" id="btnAddFilial">+ Nova filial</button></div>
-    </div>
-    <div class="filiais-list" id="filiaisList"></div>
-    <div class="helptext">O campo UF é usado apenas como referência para as alíquotas interestaduais; não altera os lançamentos já digitados.</div>
-  </div>
-
   <!-- LANÇAMENTOS -->
   <div class="panel active" id="panel-lancamentos">
     <div class="helptext" id="consolidadoNote" style="display:none; margin-bottom:12px; padding:9px 12px; border:1px solid var(--accent-soft-border); background:var(--accent-soft); border-radius:8px; color:var(--text);">
       Modo Resumo: soma automaticamente os lançamentos de todas as lojas por CFOP, somente leitura. Para editar, selecione uma loja específica.
     </div>
-    <div class="field" style="margin-bottom:14px; max-width:220px;">
+    <div class="field" style="margin-bottom:14px; max-width:420px;">
       <label for="filtroCfopLancamentos">Filtrar por CFOP</label>
-      <input type="text" id="filtroCfopLancamentos" class="mono" placeholder="ex.: 1152" maxlength="4">
+      <select id="filtroCfopLancamentos" class="mono" style="width:100%;"><option value="">Todos os CFOPs</option></select>
     </div>
     <div class="card">
       <div class="card-head">
@@ -643,8 +614,6 @@ var TRANSFER_CODES_IN_INTER   = ["2151","2152","2408","2409"];
 
 /* ===================== state ===================== */
 var STORAGE_KEY = "icms_apuracao_megag_v1";
-
-function uid(){ return Math.random().toString(36).slice(2,9); }
 
 function defaultState(){
   return {
@@ -982,40 +951,6 @@ function renderCompanyLine(){
   }
 }
 
-/* ===================== rendering: filiais manager ===================== */
-function renderFiliaisPanel(){
-  var wrap = document.getElementById("filiaisList");
-  wrap.innerHTML = "";
-  state.filiais.forEach(function(f){
-    var row = document.createElement("div");
-    row.className = "filial-row";
-    row.innerHTML =
-      (f.id === state.filiais[0].id ? '<span class="tag">matriz</span>' : '<span class="tag" style="background:var(--surface-3);color:var(--text-muted);border-color:var(--border)">filial</span>') +
-      '<input type="text" data-f="'+f.id+'" data-k="nome" value="'+escapeHtml(f.nome)+'" placeholder="Nome da filial">' +
-      '<input type="text" data-f="'+f.id+'" data-k="uf" value="'+escapeHtml(f.uf||"")+'" placeholder="UF" style="max-width:56px">' +
-      '<input type="text" data-f="'+f.id+'" data-k="cnpj" value="'+escapeHtml(f.cnpj||"")+'" placeholder="CNPJ" style="max-width:160px">' +
-      '<input type="text" data-f="'+f.id+'" data-k="ie" value="'+escapeHtml(f.ie||"")+'" placeholder="Inscrição Estadual" style="max-width:150px">' +
-      (state.filiais.length>1 ? '<button class="btn sm danger" data-del="'+f.id+'">Remover</button>' : "");
-    wrap.appendChild(row);
-  });
-  wrap.querySelectorAll("input").forEach(function(inp){
-    inp.addEventListener("input", function(){
-      var f = state.filiais.find(function(x){return x.id===inp.dataset.f;});
-      if(f){ f[inp.dataset.k] = inp.value; saveState(); renderFilialSelect(); renderCompanyLine(); renderAll(); }
-    });
-  });
-  wrap.querySelectorAll("[data-del]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = btn.dataset.del;
-      if(!confirm("Remover esta filial? Os lançamentos digitados para ela permanecerão salvos, mas ficarão inacessíveis pela interface.")) return;
-      state.filiais = state.filiais.filter(function(x){return x.id!==id;});
-      if(state.selFilial === id) state.selFilial = state.filiais[0].id;
-      saveState();
-      renderFilialSelect(); renderCompanyLine(); renderFiliaisPanel(); renderAll();
-    });
-  });
-}
-
 /* ===================== rendering: lançamentos tables ===================== */
 function buildRow(tableBody, item, idx, tipo, readOnly){
   var tr = document.createElement("tr");
@@ -1046,6 +981,19 @@ function buildRow(tableBody, item, idx, tipo, readOnly){
 
 var filtroCfopLancamentos = "";
 
+function renderCfopFilterOptions(){
+  var sel = document.getElementById("filtroCfopLancamentos");
+  var reg = currentReg();
+  var codes = {};
+  reg.entradas.concat(reg.saidas).forEach(function(r){ if(r.cfop) codes[r.cfop] = true; });
+  var sorted = Object.keys(codes).sort();
+  if(filtroCfopLancamentos && sorted.indexOf(filtroCfopLancamentos) === -1) filtroCfopLancamentos = "";
+  sel.innerHTML = '<option value="">Todos os CFOPs</option>' + sorted.map(function(c){
+    var info = cfopInfo(c);
+    return '<option value="'+c+'"'+(c===filtroCfopLancamentos?" selected":"")+'>'+c+(info?" — "+escapeHtml(info.d):" — não catalogado")+'</option>';
+  }).join("");
+}
+
 function renderLancTable(tipo){
   var reg = currentReg();
   var list = reg[tipo];
@@ -1055,14 +1003,14 @@ function renderLancTable(tipo){
   var tfoot = table.querySelector("tfoot");
   tbody.innerHTML = "";
 
-  var filtro = filtroCfopLancamentos.trim();
+  var filtro = filtroCfopLancamentos;
   var indices = list.map(function(_,i){ return i; });
   if(filtro){
-    indices = indices.filter(function(i){ return (list[i].cfop||"").indexOf(filtro) > -1; });
+    indices = indices.filter(function(i){ return list[i].cfop === filtro; });
   }
   indices.forEach(function(idx){ buildRow(tbody, list[idx], idx, tipo, readOnly); });
   if(filtro && indices.length === 0){
-    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-faint)">Nenhum CFOP contém "'+escapeHtml(filtro)+'".</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-faint)">Nenhum lançamento com o CFOP '+escapeHtml(filtro)+'.</td></tr>';
   }
 
   var totals = indices.reduce(function(acc,i){
@@ -1119,7 +1067,16 @@ function renderLancTable(tipo){
 }
 
 /* ===================== rule engine ===================== */
+var DIFAL_ALERT_CODES = ["2551","2556"];
 function classifyRow(cfop, contabil, base, imposto){
+  var result = classifyRowBase(cfop, contabil, base, imposto);
+  if(DIFAL_ALERT_CODES.indexOf(cfop) > -1 && parseNumberBR(contabil) > 0){
+    var nota = " Atenção: aquisição interestadual para uso próprio (não para revenda) — verifique o recolhimento do DIFAL (diferencial de alíquota) devido à UF da filial. O DIFAL é apurado à parte deste demonstrativo (GNRE/Bloco H do SPED Fiscal), não aparece nas colunas de base/imposto acima.";
+    result = {status: result.status === "ok" ? "warn" : result.status, motivo: result.motivo + nota};
+  }
+  return result;
+}
+function classifyRowBase(cfop, contabil, base, imposto){
   var info = cfopInfo(cfop);
   contabil = parseNumberBR(contabil); base = parseNumberBR(base); imposto = parseNumberBR(imposto);
   if(!cfop){
@@ -1330,9 +1287,11 @@ function renderReconciliacao(){
   var grandInter = document.getElementById("reconGrandInterestadual");
   grandInter.className = "recon-grand " + (okInter ? "ok" : "bad");
   grandInter.innerHTML =
+    '<div><div class="lbl">Fora do estado — saída</div><div class="big">R$ '+fmtBRL(totais.outInter)+'</div></div>' +
+    '<div><div class="lbl">Fora do estado — entrada</div><div class="big">R$ '+fmtBRL(totais.inInter)+'</div></div>' +
     '<div><div class="lbl">Fora do estado — ICMS débito</div><div class="big">R$ '+fmtBRL(totais.icmsDeb)+'</div></div>' +
     '<div><div class="lbl">Fora do estado — ICMS crédito</div><div class="big">R$ '+fmtBRL(totais.icmsCred)+'</div></div>' +
-    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(okInter?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffInter)+'</div></div>' +
+    '<div><div class="lbl">Diferença (ICMS)</div><div class="big" style="color:'+(okInter?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffInter)+'</div></div>' +
     '<div>'+badgeHtml(okInter?"ok":"bad")+'</div>';
 
   return okEstado && okInter;
@@ -1522,6 +1481,7 @@ function exportCsv(tipo){
 function renderAll(){
   var note = document.getElementById("consolidadoNote");
   if(note) note.style.display = isConsolidado() ? "block" : "none";
+  renderCfopFilterOptions();
   renderLancTable("entradas");
   renderLancTable("saidas");
   renderClassificacao();
@@ -1547,7 +1507,7 @@ function initControls(){
   document.getElementById("selFilial").addEventListener("change", function(e){
     state.selFilial = e.target.value; saveState(); renderCompanyLine(); renderAll();
   });
-  document.getElementById("filtroCfopLancamentos").addEventListener("input", function(e){
+  document.getElementById("filtroCfopLancamentos").addEventListener("change", function(e){
     filtroCfopLancamentos = e.target.value;
     renderLancTable("entradas");
     renderLancTable("saidas");
@@ -1555,29 +1515,6 @@ function initControls(){
   document.getElementById("selPeriodo").addEventListener("change", function(e){
     state.selPeriodo = e.target.value; saveState(); renderCompanyLine(); renderAll();
   });
-  document.getElementById("btnNovoPeriodo").addEventListener("click", function(){
-    var label = prompt("Nome do novo período (ex.: Setembro/2026):");
-    if(!label) return;
-    var id = prompt("Identificador curto do período (ex.: 2026-09):", label.toLowerCase().replace(/[^a-z0-9]+/g,"-"));
-    if(!id) return;
-    if(state.periodos.some(function(p){return p.id===id;})){ alert("Já existe um período com esse identificador."); return; }
-    state.periodos.push({id:id, label:label});
-    state.selPeriodo = id;
-    saveState(); renderPeriodoSelect(); renderCompanyLine(); renderAll();
-  });
-  document.getElementById("btnGerenciarFiliais").addEventListener("click", function(){
-    var p = document.getElementById("painelFiliais");
-    p.style.display = p.style.display === "none" ? "block" : "none";
-  });
-  document.getElementById("btnAddFilial").addEventListener("click", function(){
-    var nome = prompt("Nome da nova filial (ex.: Filial 01 — Campinas):");
-    if(!nome) return;
-    var id = "f_"+uid();
-    state.filiais.push({id:id, nome:nome, uf:"", cnpj:"", ie:""});
-    saveState();
-    renderFiliaisPanel(); renderFilialSelect(); renderAll();
-  });
-
   document.getElementById("btnAddEntrada").addEventListener("click", function(){
     currentReg().entradas.push({cfop:"", contabil:0, base:0, imposto:0, isenta:0, outras:0});
     saveState(); renderLancTable("entradas");
@@ -1607,7 +1544,7 @@ function initControls(){
         if(!state.filiais.some(function(f){return f.id===state.selFilial;})) state.selFilial = state.filiais[0].id;
         if(!state.periodos.some(function(p){return p.id===state.selPeriodo;})) state.selPeriodo = state.periodos[0].id;
         saveState();
-        renderFilialSelect(); renderPeriodoSelect(); renderCompanyLine(); renderFiliaisPanel(); renderAll();
+        renderFilialSelect(); renderPeriodoSelect(); renderCompanyLine(); renderAll();
         alert("Backup importado com sucesso.");
       }catch(err){
         alert("Não foi possível importar este arquivo: "+err.message);
@@ -1625,7 +1562,6 @@ initControls();
 renderFilialSelect();
 renderPeriodoSelect();
 renderCompanyLine();
-renderFiliaisPanel();
 renderSugestoesEstaticas();
 renderAll();
 
