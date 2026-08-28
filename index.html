@@ -29,6 +29,10 @@
   --bad:#b3261e;
   --bad-soft:#fbe6e4;
   --bad-soft-border:#f0b8b2;
+  --chart-1:#2a78d6;
+  --chart-2:#eb6834;
+  --chart-3:#1baf7a;
+  --chart-4:#eda100;
   --shadow: 0 1px 2px rgba(20,26,38,.04), 0 4px 14px rgba(20,26,38,.06);
   --radius: 10px;
   color-scheme: light;
@@ -57,6 +61,10 @@
     --bad:#ea8c85;
     --bad-soft:#3d1e1c;
     --bad-soft-border:#69302b;
+    --chart-1:#3987e5;
+    --chart-2:#d95926;
+    --chart-3:#199e70;
+    --chart-4:#c98500;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
     color-scheme: dark;
   }
@@ -84,6 +92,10 @@
   --bad:#ea8c85;
   --bad-soft:#3d1e1c;
   --bad-soft-border:#69302b;
+  --chart-1:#3987e5;
+  --chart-2:#d95926;
+  --chart-3:#199e70;
+  --chart-4:#c98500;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
   color-scheme: dark;
 }
@@ -285,6 +297,23 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .divider{height:1px; background:var(--border); margin:14px 0;}
 .footer-note{color:var(--text-faint); font-size:11.5px; margin-top:26px; line-height:1.6; padding-top:14px; border-top:1px solid var(--border);}
 
+/* dashboard charts */
+.chart-legend{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:16px; font-size:12px; color:var(--text-muted);}
+.chart-legend .item{display:flex; align-items:center; gap:6px;}
+.chart-legend .swatch{width:10px; height:10px; border-radius:2px; flex:none;}
+.chart-row{display:flex; align-items:center; gap:12px; padding:7px 0;}
+.chart-row:not(:last-child){border-bottom:1px solid var(--border);}
+.chart-row-label{width:130px; flex:none; font-size:12.5px; color:var(--text-muted); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.chart-row-label.total{color:var(--text); font-weight:700;}
+.chart-bar-track{flex:1; min-width:0;}
+.chart-bar{display:flex; gap:2px; height:22px; border-radius:6px; overflow:hidden; min-width:2px;}
+.chart-seg{display:flex; align-items:center; justify-content:center; min-width:0; overflow:hidden; white-space:nowrap; font-size:10.5px; color:#fff; font-weight:600; letter-spacing:.02em;}
+.chart-row-value{width:150px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:12.5px; font-variant-numeric:tabular-nums;}
+.chart-empty{height:22px; border-radius:6px; background:repeating-linear-gradient(45deg, var(--surface-3), var(--surface-3) 6px, var(--surface-2) 6px, var(--surface-2) 12px); display:flex; align-items:center; padding-left:10px; font-size:11px; color:var(--text-faint);}
+
+.meter{height:8px; border-radius:4px; background:var(--surface-3); overflow:hidden; margin-top:8px;}
+.meter-fill{height:100%; border-radius:4px; background:var(--accent);}
+
 @media (max-width:640px){
   table{min-width:640px;}
 }
@@ -324,6 +353,7 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
         <div class="tab" data-tab="classificacao">Classificação de CFOP <span class="count" id="cntClassif"></span></div>
         <div class="tab" data-tab="reconciliacao">Reconciliação entre filiais <span class="count" id="cntRecon"></span></div>
         <div class="tab" data-tab="resumo">Resumo da apuração</div>
+        <div class="tab" data-tab="dashboard">Resumo detalhado</div>
         <div class="tab" data-tab="sugestoes">Parecer do analista</div>
       </div>
     </div>
@@ -334,9 +364,12 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
     <div class="helptext" id="consolidadoNote" style="display:none; margin-bottom:12px; padding:9px 12px; border:1px solid var(--accent-soft-border); background:var(--accent-soft); border-radius:8px; color:var(--text);">
       Modo Resumo: soma automaticamente os lançamentos de todas as lojas por CFOP, somente leitura. Para editar, selecione uma loja específica.
     </div>
-    <div class="field" style="margin-bottom:14px; max-width:420px;">
-      <label for="filtroCfopLancamentos">Filtrar por CFOP</label>
-      <select id="filtroCfopLancamentos" class="mono" style="width:100%;"><option value="">Todos os CFOPs</option></select>
+    <div style="display:flex; align-items:end; gap:10px; margin-bottom:14px;">
+      <div class="field" style="max-width:420px; flex:1;">
+        <label for="filtroCfopLancamentos">Filtrar por CFOP</label>
+        <select id="filtroCfopLancamentos" class="mono" style="width:100%;"><option value="">Todos os CFOPs</option></select>
+      </div>
+      <button class="btn sm ghost" id="btnLimparFiltroCfop">Limpar filtro</button>
     </div>
     <div class="card">
       <div class="card-head">
@@ -437,17 +470,29 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
         <div class="recon-grand" id="reconGrandEstado"></div>
         <div class="recon-grand" id="reconGrandInterestadual"></div>
       </div>
+      <div class="helptext" style="margin-bottom:8px;">Cada bloco (saída/entrada, mesmo estado/fora do estado) é aberto em <b>Tributado/Isento</b> (CFOP x.15x) e <b>ST</b> (CFOP x.40x, substituição tributária) — para confirmar visualmente que as transferências de mercadoria com ST também estão entrando na soma.</div>
       <div class="table-wrap">
         <table id="tblReconFiliais">
           <thead>
             <tr>
-              <th>Filial</th>
-              <th class="num">Saída transf. mesmo estado</th>
-              <th class="num">Entrada transf. mesmo estado</th>
-              <th class="num">Saída transf. fora do estado</th>
-              <th class="num">Entrada transf. fora do estado</th>
-              <th class="num">ICMS débito (saída fora do estado)</th>
-              <th class="num">ICMS crédito (entrada fora do estado)</th>
+              <th rowspan="2">Filial</th>
+              <th colspan="2">Saída — mesmo estado</th>
+              <th colspan="2">Entrada — mesmo estado</th>
+              <th colspan="2">Saída — fora do estado</th>
+              <th colspan="2">Entrada — fora do estado</th>
+              <th colspan="2">ICMS (fora do estado)</th>
+            </tr>
+            <tr>
+              <th class="num">Trib./Isento</th>
+              <th class="num">ST</th>
+              <th class="num">Trib./Isento</th>
+              <th class="num">ST</th>
+              <th class="num">Trib./Isento</th>
+              <th class="num">ST</th>
+              <th class="num">Trib./Isento</th>
+              <th class="num">ST</th>
+              <th class="num">Débito</th>
+              <th class="num">Crédito</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -479,6 +524,61 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
               <th class="num">Crédito ICMS</th>
               <th class="num">Saldo do período</th>
               <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESUMO DETALHADO / DASHBOARD -->
+  <div class="panel" id="panel-dashboard">
+    <div class="card">
+      <div class="card-head">
+        <h2>Painel — Compras, Vendas e ICMS</h2>
+        <div class="desc">Todas as filiais, período selecionado. Tributado = base de cálculo com ICMS destacado. Isento = valor declarado isento/não tributado. ST = mercadoria com substituição tributária. Outras = demais operações (transferência, uso e consumo, bonificação, serviços etc.).</div>
+      </div>
+      <div class="grid-summary" id="dashKpis" style="margin-bottom:14px;"></div>
+      <div class="grid-summary" id="dashMeters"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Composição das compras — por loja e total</h2>
+      </div>
+      <div class="chart-legend" id="dashLegendCompras"></div>
+      <div id="dashChartCompras"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Composição das vendas — por loja e total</h2>
+      </div>
+      <div class="chart-legend" id="dashLegendVendas"></div>
+      <div id="dashChartVendas"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Detalhamento por loja</h2>
+      </div>
+      <div class="table-wrap">
+        <table id="tblDashDetalhe">
+          <thead>
+            <tr>
+              <th>Filial</th>
+              <th class="num">Compras — total</th>
+              <th class="num">% Tributado</th>
+              <th class="num">% Isento</th>
+              <th class="num">% ST</th>
+              <th class="num">Vendas — total</th>
+              <th class="num">% Tributado</th>
+              <th class="num">% Isento</th>
+              <th class="num">% ST</th>
+              <th class="num">ICMS débito</th>
+              <th class="num">ICMS crédito</th>
+              <th class="num">Saldo</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -607,10 +707,18 @@ var CFOP_DB = {
   "5909":{d:"Retorno de bem remetido por conta de contrato de comodato", g:"outras", c:"nao", obs:"Retorno de bem cedido em comodato — operação sem tributação de ICMS."}
 };
 
-var TRANSFER_CODES_OUT_ESTADO = ["5151","5152","5408","5409"];
-var TRANSFER_CODES_IN_ESTADO  = ["1151","1152","1408","1409"];
-var TRANSFER_CODES_OUT_INTER  = ["6151","6152","6408","6409"];
-var TRANSFER_CODES_IN_INTER   = ["2151","2152","2408","2409"];
+var TRANSFER_CODES_OUT_ESTADO_TRIB = ["5151","5152"];
+var TRANSFER_CODES_OUT_ESTADO_ST   = ["5408","5409"];
+var TRANSFER_CODES_IN_ESTADO_TRIB  = ["1151","1152"];
+var TRANSFER_CODES_IN_ESTADO_ST    = ["1408","1409"];
+var TRANSFER_CODES_OUT_INTER_TRIB  = ["6151","6152"];
+var TRANSFER_CODES_OUT_INTER_ST    = ["6408","6409"];
+var TRANSFER_CODES_IN_INTER_TRIB   = ["2151","2152"];
+var TRANSFER_CODES_IN_INTER_ST     = ["2408","2409"];
+var TRANSFER_CODES_OUT_ESTADO = TRANSFER_CODES_OUT_ESTADO_TRIB.concat(TRANSFER_CODES_OUT_ESTADO_ST);
+var TRANSFER_CODES_IN_ESTADO  = TRANSFER_CODES_IN_ESTADO_TRIB.concat(TRANSFER_CODES_IN_ESTADO_ST);
+var TRANSFER_CODES_OUT_INTER  = TRANSFER_CODES_OUT_INTER_TRIB.concat(TRANSFER_CODES_OUT_INTER_ST);
+var TRANSFER_CODES_IN_INTER   = TRANSFER_CODES_IN_INTER_TRIB.concat(TRANSFER_CODES_IN_INTER_ST);
 
 /* ===================== state ===================== */
 var STORAGE_KEY = "icms_apuracao_megag_v1";
@@ -1178,7 +1286,8 @@ function renderClassifFiltros(counts){
   wrap.innerHTML = html;
   wrap.querySelectorAll(".badge.chip").forEach(function(chip){
     chip.addEventListener("click", function(){
-      filtroClassifStatus = chip.dataset.status || null;
+      var clicado = chip.dataset.status || null;
+      filtroClassifStatus = (filtroClassifStatus === clicado) ? null : clicado;
       renderClassificacao();
     });
   });
@@ -1243,34 +1352,55 @@ function renderReconciliacao(){
   var totais = {outEstado:0, inEstado:0, outInter:0, inInter:0, icmsDeb:0, icmsCred:0};
   var rowsHtml = "";
 
+  var t = {
+    outEstadoTrib:0, outEstadoSt:0, inEstadoTrib:0, inEstadoSt:0,
+    outInterTrib:0, outInterSt:0, inInterTrib:0, inInterSt:0,
+    icmsDeb:0, icmsCred:0
+  };
+
   state.filiais.forEach(function(f){
     var reg = regFor(f.id, periodo);
-    var outEstado = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO, "contabil");
-    var inEstado  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO, "contabil");
-    var outInter  = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "contabil");
-    var inInter   = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "contabil");
-    var icmsDeb   = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "imposto");
-    var icmsCred  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "imposto");
-    totais.outEstado += outEstado; totais.inEstado += inEstado;
-    totais.outInter += outInter; totais.inInter += inInter;
-    totais.icmsDeb += icmsDeb; totais.icmsCred += icmsCred;
+    var v = {
+      outEstadoTrib: sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO_TRIB, "contabil"),
+      outEstadoSt:   sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO_ST, "contabil"),
+      inEstadoTrib:  sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO_TRIB, "contabil"),
+      inEstadoSt:    sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO_ST, "contabil"),
+      outInterTrib:  sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER_TRIB, "contabil"),
+      outInterSt:    sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER_ST, "contabil"),
+      inInterTrib:   sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER_TRIB, "contabil"),
+      inInterSt:     sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER_ST, "contabil"),
+      icmsDeb:       sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "imposto"),
+      icmsCred:      sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "imposto")
+    };
+    Object.keys(t).forEach(function(k){ t[k] += v[k]; });
+    totais.outEstado += v.outEstadoTrib+v.outEstadoSt; totais.inEstado += v.inEstadoTrib+v.inEstadoSt;
+    totais.outInter += v.outInterTrib+v.outInterSt; totais.inInter += v.inInterTrib+v.inInterSt;
+    totais.icmsDeb += v.icmsDeb; totais.icmsCred += v.icmsCred;
     rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
-      '<td class="num">'+fmtBRL(outEstado)+'</td>' +
-      '<td class="num">'+fmtBRL(inEstado)+'</td>' +
-      '<td class="num">'+fmtBRL(outInter)+'</td>' +
-      '<td class="num">'+fmtBRL(inInter)+'</td>' +
-      '<td class="num">'+fmtBRL(icmsDeb)+'</td>' +
-      '<td class="num">'+fmtBRL(icmsCred)+'</td></tr>';
+      '<td class="num">'+fmtBRL(v.outEstadoTrib)+'</td>' +
+      '<td class="num">'+fmtBRL(v.outEstadoSt)+'</td>' +
+      '<td class="num">'+fmtBRL(v.inEstadoTrib)+'</td>' +
+      '<td class="num">'+fmtBRL(v.inEstadoSt)+'</td>' +
+      '<td class="num">'+fmtBRL(v.outInterTrib)+'</td>' +
+      '<td class="num">'+fmtBRL(v.outInterSt)+'</td>' +
+      '<td class="num">'+fmtBRL(v.inInterTrib)+'</td>' +
+      '<td class="num">'+fmtBRL(v.inInterSt)+'</td>' +
+      '<td class="num">'+fmtBRL(v.icmsDeb)+'</td>' +
+      '<td class="num">'+fmtBRL(v.icmsCred)+'</td></tr>';
   });
 
-  document.querySelector("#tblReconFiliais tbody").innerHTML = rowsHtml || '<tr><td colspan="7" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
+  document.querySelector("#tblReconFiliais tbody").innerHTML = rowsHtml || '<tr><td colspan="11" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
   document.querySelector("#tblReconFiliais tfoot").innerHTML = '<tr><td>Totais</td>' +
-    '<td class="num">'+fmtBRL(totais.outEstado)+'</td>' +
-    '<td class="num">'+fmtBRL(totais.inEstado)+'</td>' +
-    '<td class="num">'+fmtBRL(totais.outInter)+'</td>' +
-    '<td class="num">'+fmtBRL(totais.inInter)+'</td>' +
-    '<td class="num">'+fmtBRL(totais.icmsDeb)+'</td>' +
-    '<td class="num">'+fmtBRL(totais.icmsCred)+'</td></tr>';
+    '<td class="num">'+fmtBRL(t.outEstadoTrib)+'</td>' +
+    '<td class="num">'+fmtBRL(t.outEstadoSt)+'</td>' +
+    '<td class="num">'+fmtBRL(t.inEstadoTrib)+'</td>' +
+    '<td class="num">'+fmtBRL(t.inEstadoSt)+'</td>' +
+    '<td class="num">'+fmtBRL(t.outInterTrib)+'</td>' +
+    '<td class="num">'+fmtBRL(t.outInterSt)+'</td>' +
+    '<td class="num">'+fmtBRL(t.inInterTrib)+'</td>' +
+    '<td class="num">'+fmtBRL(t.inInterSt)+'</td>' +
+    '<td class="num">'+fmtBRL(t.icmsDeb)+'</td>' +
+    '<td class="num">'+fmtBRL(t.icmsCred)+'</td></tr>';
 
   var diffEstado = totais.outEstado - totais.inEstado;
   var okEstado = Math.abs(diffEstado) < 0.01;
@@ -1340,6 +1470,149 @@ function renderResumo(){
     statCard("Débito consolidado", "R$ "+fmtBRL(totalDeb)) +
     statCard("Crédito consolidado", "R$ "+fmtBRL(totalCred)) +
     statCard(saldoC>=0?"ICMS a recolher (grupo)":"Saldo credor (grupo)", "R$ "+fmtBRL(Math.abs(saldoC)), saldoC>=0?"bad":"ok", periodoLabel(state.selPeriodo));
+}
+
+/* ===================== rendering: resumo detalhado / dashboard ===================== */
+var CHART_CATS = [
+  {key:"tributado", label:"Tributado", color:"var(--chart-1)"},
+  {key:"st", label:"ST (substituição tributária)", color:"var(--chart-2)"},
+  {key:"isento", label:"Isento / não tributado", color:"var(--chart-3)"},
+  {key:"outras", label:"Outras operações", color:"var(--chart-4)"}
+];
+
+function bucketize(rows){
+  var total=0, tributado=0, isento=0, st=0;
+  (rows||[]).forEach(function(r){
+    var cont = parseNumberBR(r.contabil);
+    var info = cfopInfo(r.cfop);
+    var isST = info && info.g === "st";
+    total += cont;
+    if(isST){
+      st += cont;
+    } else {
+      tributado += parseNumberBR(r.base);
+      isento += parseNumberBR(r.isenta);
+    }
+  });
+  var outras = total - tributado - isento - st;
+  if(outras < 0) outras = 0;
+  return {total:total, tributado:tributado, isento:isento, st:st, outras:outras};
+}
+function sumBuckets(list){
+  return list.reduce(function(acc,b){
+    acc.total+=b.total; acc.tributado+=b.tributado; acc.isento+=b.isento; acc.st+=b.st; acc.outras+=b.outras;
+    return acc;
+  }, {total:0,tributado:0,isento:0,st:0,outras:0});
+}
+
+function meterCard(label, pct){
+  var clamped = Math.max(0, Math.min(100, Math.abs(pct)));
+  return '<div class="stat"><div class="label">'+escapeHtml(label)+'</div>' +
+    '<div class="value">'+(isFinite(pct)?fmtPct(pct):"—")+'</div>' +
+    '<div class="meter"><div class="meter-fill" style="width:'+clamped+'%"></div></div></div>';
+}
+
+function renderChartLegend(containerId){
+  document.getElementById(containerId).innerHTML = CHART_CATS.map(function(c){
+    return '<div class="item"><span class="swatch" style="background:'+c.color+'"></span>'+escapeHtml(c.label)+'</div>';
+  }).join("");
+}
+
+function renderStackedBarChart(containerId, rows, maxTotal){
+  document.getElementById(containerId).innerHTML = rows.map(function(row){
+    var labelCls = row.isTotal ? "chart-row-label total" : "chart-row-label";
+    if(row.total <= 0){
+      return '<div class="chart-row"><div class="'+labelCls+'">'+escapeHtml(row.label)+'</div>' +
+        '<div class="chart-bar-track"><div class="chart-empty">sem movimento</div></div>' +
+        '<div class="chart-row-value">R$ 0,00</div></div>';
+    }
+    var widthPct = maxTotal>0 ? Math.max(1, row.total/maxTotal*100) : 0;
+    var segs = CHART_CATS.map(function(c){
+      var v = row[c.key] || 0;
+      if(v<=0) return "";
+      var pctRow = v/row.total*100;
+      var absPct = widthPct * (pctRow/100); // share of the FULL chart width, not just this row's bar
+      var label = absPct>=7 ? fmtPct(pctRow) : "";
+      return '<div class="chart-seg" style="flex:'+v+' 0 0px; background:'+c.color+'" title="'+escapeHtml(c.label)+': R$ '+fmtBRL(v)+' ('+fmtPct(pctRow)+' desta barra) — '+escapeHtml(row.label)+'">'+label+'</div>';
+    }).join("");
+    return '<div class="chart-row"><div class="'+labelCls+'">'+escapeHtml(row.label)+'</div>' +
+      '<div class="chart-bar-track"><div class="chart-bar" style="width:'+widthPct+'%">'+segs+'</div></div>' +
+      '<div class="chart-row-value">R$ '+fmtBRL(row.total)+'</div></div>';
+  }).join("");
+}
+
+function dashTableRow(nome, x, isTotal){
+  var c = x.compras, v = x.vendas;
+  var pctCTrib = c.total>0? c.tributado/c.total*100:0;
+  var pctCIsento = c.total>0? c.isento/c.total*100:0;
+  var pctCSt = c.total>0? c.st/c.total*100:0;
+  var pctVTrib = v.total>0? v.tributado/v.total*100:0;
+  var pctVIsento = v.total>0? v.isento/v.total*100:0;
+  var pctVSt = v.total>0? v.st/v.total*100:0;
+  var saldo = x.icmsDeb - x.icmsCred;
+  return '<tr'+(isTotal?' style="font-weight:700;background:var(--surface-2)"':'')+'><td>'+escapeHtml(nome)+'</td>' +
+    '<td class="num">'+fmtBRL(c.total)+'</td>' +
+    '<td class="num">'+fmtPct(pctCTrib)+'</td>' +
+    '<td class="num">'+fmtPct(pctCIsento)+'</td>' +
+    '<td class="num">'+fmtPct(pctCSt)+'</td>' +
+    '<td class="num">'+fmtBRL(v.total)+'</td>' +
+    '<td class="num">'+fmtPct(pctVTrib)+'</td>' +
+    '<td class="num">'+fmtPct(pctVIsento)+'</td>' +
+    '<td class="num">'+fmtPct(pctVSt)+'</td>' +
+    '<td class="num">'+fmtBRL(x.icmsDeb)+'</td>' +
+    '<td class="num">'+fmtBRL(x.icmsCred)+'</td>' +
+    '<td class="num">'+fmtBRL(saldo)+'</td></tr>';
+}
+
+function renderDashboard(){
+  var periodo = state.selPeriodo;
+  var perFilial = state.filiais.map(function(f){
+    var reg = regFor(f.id, periodo);
+    return {
+      filial: f,
+      compras: bucketize(reg.entradas),
+      vendas: bucketize(reg.saidas),
+      icmsDeb: (reg.saidas||[]).reduce(function(a,r){return a+parseNumberBR(r.imposto);},0),
+      icmsCred: (reg.entradas||[]).reduce(function(a,r){return a+parseNumberBR(r.imposto);},0)
+    };
+  });
+  var totalCompras = sumBuckets(perFilial.map(function(x){return x.compras;}));
+  var totalVendas = sumBuckets(perFilial.map(function(x){return x.vendas;}));
+  var totalIcmsDeb = perFilial.reduce(function(a,x){return a+x.icmsDeb;},0);
+  var totalIcmsCred = perFilial.reduce(function(a,x){return a+x.icmsCred;},0);
+  var saldo = totalIcmsDeb - totalIcmsCred;
+
+  document.getElementById("dashKpis").innerHTML =
+    statCard("Total de compras (grupo)", "R$ "+fmtBRL(totalCompras.total)) +
+    statCard("Total de vendas (grupo)", "R$ "+fmtBRL(totalVendas.total)) +
+    statCard(saldo>=0?"ICMS a recolher (grupo)":"Saldo credor (grupo)", "R$ "+fmtBRL(Math.abs(saldo)), saldo>=0?"bad":"ok", periodoLabel(periodo));
+
+  var pctIcmsVendas = totalVendas.total>0 ? (saldo/totalVendas.total*100) : NaN;
+  var pctCompraIsenta = totalCompras.total>0 ? (totalCompras.isento/totalCompras.total*100) : NaN;
+  var pctVendaTributada = totalVendas.total>0 ? (totalVendas.tributado/totalVendas.total*100) : NaN;
+  document.getElementById("dashMeters").innerHTML =
+    meterCard("ICMS a recolher sobre as vendas", pctIcmsVendas) +
+    meterCard("Compra isenta sobre total de compras", pctCompraIsenta) +
+    meterCard("Venda tributada sobre total de vendas", pctVendaTributada);
+
+  renderChartLegend("dashLegendCompras");
+  renderChartLegend("dashLegendVendas");
+
+  var rowsCompras = perFilial.map(function(x){
+    return {label:x.filial.nome, total:x.compras.total, tributado:x.compras.tributado, isento:x.compras.isento, st:x.compras.st, outras:x.compras.outras};
+  });
+  rowsCompras.push({label:"Total (grupo)", isTotal:true, total:totalCompras.total, tributado:totalCompras.tributado, isento:totalCompras.isento, st:totalCompras.st, outras:totalCompras.outras});
+  renderStackedBarChart("dashChartCompras", rowsCompras, totalCompras.total);
+
+  var rowsVendas = perFilial.map(function(x){
+    return {label:x.filial.nome, total:x.vendas.total, tributado:x.vendas.tributado, isento:x.vendas.isento, st:x.vendas.st, outras:x.vendas.outras};
+  });
+  rowsVendas.push({label:"Total (grupo)", isTotal:true, total:totalVendas.total, tributado:totalVendas.tributado, isento:totalVendas.isento, st:totalVendas.st, outras:totalVendas.outras});
+  renderStackedBarChart("dashChartVendas", rowsVendas, totalVendas.total);
+
+  var rowsHtml = perFilial.map(function(x){ return dashTableRow(x.filial.nome, x, false); }).join("") +
+    dashTableRow("Total (grupo)", {compras:totalCompras, vendas:totalVendas, icmsDeb:totalIcmsDeb, icmsCred:totalIcmsCred}, true);
+  document.querySelector("#tblDashDetalhe tbody").innerHTML = rowsHtml;
 }
 
 /* ===================== rendering: sugestões / parecer ===================== */
@@ -1487,6 +1760,7 @@ function renderAll(){
   renderClassificacao();
   renderReconciliacao();
   renderResumo();
+  renderDashboard();
   renderSugestoes();
   updateTabCounts();
 }
@@ -1509,6 +1783,12 @@ function initControls(){
   });
   document.getElementById("filtroCfopLancamentos").addEventListener("change", function(e){
     filtroCfopLancamentos = e.target.value;
+    renderLancTable("entradas");
+    renderLancTable("saidas");
+  });
+  document.getElementById("btnLimparFiltroCfop").addEventListener("click", function(){
+    filtroCfopLancamentos = "";
+    document.getElementById("filtroCfopLancamentos").value = "";
     renderLancTable("entradas");
     renderLancTable("saidas");
   });
