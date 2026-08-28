@@ -263,17 +263,6 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .badge.chip.active{opacity:1; box-shadow:0 0 0 2px var(--surface) inset, 0 0 0 3px currentColor;}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;}
 
-/* reconciliation */
-.recon-grand{
-  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
-  padding:16px 18px; border-radius:10px; margin-bottom:14px;
-  border:1px solid var(--border);
-}
-.recon-grand.ok{background:var(--ok-soft); border-color:var(--ok-soft-border);}
-.recon-grand.bad{background:var(--bad-soft); border-color:var(--bad-soft-border);}
-.recon-grand .big{font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:700;}
-.recon-grand .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); font-weight:600;}
-
 /* suggestions */
 .sugg-list{display:flex; flex-direction:column; gap:10px;}
 .sugg-item{
@@ -297,19 +286,65 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .divider{height:1px; background:var(--border); margin:14px 0;}
 .footer-note{color:var(--text-faint); font-size:11.5px; margin-top:26px; line-height:1.6; padding-top:14px; border-top:1px solid var(--border);}
 
-/* dashboard charts */
-.chart-legend{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:16px; font-size:12px; color:var(--text-muted);}
-.chart-legend .item{display:flex; align-items:center; gap:6px;}
-.chart-legend .swatch{width:10px; height:10px; border-radius:2px; flex:none;}
-.chart-row{display:flex; align-items:center; gap:12px; padding:7px 0;}
-.chart-row:not(:last-child){border-bottom:1px solid var(--border);}
-.chart-row-label{width:130px; flex:none; font-size:12.5px; color:var(--text-muted); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.chart-row-label.total{color:var(--text); font-weight:700;}
-.chart-bar-track{flex:1; min-width:0;}
-.chart-bar{display:flex; gap:2px; height:22px; border-radius:6px; overflow:hidden; min-width:2px;}
-.chart-seg{display:flex; align-items:center; justify-content:center; min-width:0; overflow:hidden; white-space:nowrap; font-size:10.5px; color:#fff; font-weight:600; letter-spacing:.02em;}
-.chart-row-value{width:150px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:12.5px; font-variant-numeric:tabular-nums;}
-.chart-empty{height:22px; border-radius:6px; background:repeating-linear-gradient(45deg, var(--surface-3), var(--surface-3) 6px, var(--surface-2) 6px, var(--surface-2) 12px); display:flex; align-items:center; padding-left:10px; font-size:11px; color:var(--text-faint);}
+/* ============ hero status (big pass/fail read) ============ */
+.hero-status{border-radius:14px; padding:22px 24px; border:1px solid var(--border); display:flex; flex-direction:column; gap:16px;}
+.hero-status.ok{background:var(--ok-soft); border-color:var(--ok-soft-border);}
+.hero-status.bad{background:var(--bad-soft); border-color:var(--bad-soft-border);}
+.hero-status-top{display:flex; align-items:flex-start; gap:14px;}
+.hero-status-icon{width:42px; height:42px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:#fff;}
+.hero-status.ok .hero-status-icon{background:var(--ok);}
+.hero-status.bad .hero-status-icon{background:var(--bad);}
+.hero-status-text{flex:1; min-width:0;}
+.hero-status-title{font-size:16px; font-weight:700; color:var(--text); text-wrap:balance;}
+.hero-status-sub{font-size:12.5px; color:var(--text-muted); margin-top:3px; line-height:1.5;}
+.hero-status-diffwrap{text-align:right; flex:none;}
+.hero-status-diff{font-family:"IBM Plex Mono",monospace; font-size:24px; font-weight:700; line-height:1.1;}
+.hero-status.ok .hero-status-diff{color:var(--ok);}
+.hero-status.bad .hero-status-diff{color:var(--bad);}
+.hero-status-difflbl{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-top:2px;}
+
+/* simple side-by-side comparison bars (saída x entrada, compras x vendas...) */
+.compare-bars{display:flex; flex-direction:column; gap:9px;}
+.compare-row{display:flex; align-items:center; gap:12px;}
+.compare-label{width:64px; flex:none; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); font-weight:700;}
+.compare-track{flex:1; background:rgba(127,127,127,.14); border-radius:6px; height:28px; overflow:hidden; min-width:0;}
+.compare-fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; color:#fff; font-size:12px; font-weight:700; font-family:"IBM Plex Mono",monospace; white-space:nowrap; min-width:fit-content; transition:width .2s;}
+
+/* donut composition chart */
+.donut-card{display:flex; align-items:center; gap:32px; flex-wrap:wrap;}
+.donut-wrap{position:relative; width:188px; height:188px; flex:none;}
+.donut-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; padding:0 22px;}
+.donut-center .value{font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:16px; color:var(--text); line-height:1.2;}
+.donut-center .label{font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px;}
+.donut-legend{display:flex; flex-direction:column; gap:11px; flex:1; min-width:230px;}
+.donut-legend-row{display:flex; align-items:center; gap:10px;}
+.donut-legend-swatch{width:11px; height:11px; border-radius:3px; flex:none;}
+.donut-legend-label{flex:1; font-size:13px; color:var(--text);}
+.donut-legend-value{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--text-muted); text-align:right;}
+.donut-legend-pct{width:54px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:700; color:var(--text);}
+
+/* grouped bars: compras x vendas por loja */
+.pair-legend{display:flex; gap:22px; margin-bottom:18px; font-size:12.5px; color:var(--text-muted);}
+.pair-legend .item{display:flex; align-items:center; gap:7px;}
+.pair-legend .swatch{width:10px; height:10px; border-radius:3px; flex:none;}
+.pair-block{padding:13px 0;}
+.pair-block:not(:last-child){border-bottom:1px solid var(--border);}
+.pair-block-label{font-size:13px; font-weight:700; color:var(--text); margin-bottom:9px;}
+.pair-line{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+.pair-line:last-child{margin-bottom:0;}
+.pair-track{flex:1; background:var(--surface-2); border-radius:5px; height:18px; overflow:hidden; min-width:0;}
+.pair-fill{height:100%; border-radius:5px; min-width:2px;}
+.pair-fill.compras{background:var(--accent);}
+.pair-fill.vendas{background:var(--chart-2);}
+.pair-value{width:150px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:12px; font-variant-numeric:tabular-nums; color:var(--text-muted);}
+.pair-empty{font-size:11.5px; color:var(--text-faint); padding:2px 0 8px;}
+
+/* supporting/secondary detail (demoted visually below a headline chart) */
+.detail-block{margin-top:24px; padding-top:18px; border-top:1px dashed var(--border);}
+.detail-block-label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:700; margin-bottom:10px;}
+.table-compact thead th{font-size:10px; padding:6px 8px;}
+.table-compact tbody td{font-size:11.5px; padding:5px 8px; color:var(--text-muted);}
+.table-compact tfoot td{font-size:11.5px; padding:6px 8px;}
 
 .meter{height:8px; border-radius:4px; background:var(--surface-3); overflow:hidden; margin-top:8px;}
 .meter-fill{height:100%; border-radius:4px; background:var(--accent);}
@@ -464,40 +499,48 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
     <div class="card">
       <div class="card-head">
         <h2>Transferências — Matriz × Filiais</h2>
-        <div class="desc">Por filial, no período selecionado: transferência dentro do estado (CFOP 1.15x/1.40x × 5.15x/5.40x — sem ICMS, LC 204/2023) e transferência interestadual (CFOP 2.15x/2.40x × 6.15x/6.40x — gera débito de ICMS na saída de origem e crédito na entrada de destino).</div>
+        <div class="desc">Soma de todas as filiais no período selecionado. Cada saída de transferência de uma filial deve ter a entrada correspondente em outra — o total do grupo é o que precisa fechar.</div>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-bottom:14px;">
-        <div class="recon-grand" id="reconGrandEstado"></div>
-        <div class="recon-grand" id="reconGrandInterestadual"></div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;">
+        <div>
+          <div class="hero-status" id="heroEstado"></div>
+          <div class="compare-bars" id="compareEstado" style="margin-top:14px;"></div>
+        </div>
+        <div>
+          <div class="hero-status" id="heroInter"></div>
+          <div class="compare-bars" id="compareInter" style="margin-top:14px;"></div>
+        </div>
       </div>
-      <div class="helptext" style="margin-bottom:8px;">Cada bloco (saída/entrada, mesmo estado/fora do estado) é aberto em <b>Tributado/Isento</b> (CFOP x.15x) e <b>ST</b> (CFOP x.40x, substituição tributária) — para confirmar visualmente que as transferências de mercadoria com ST também estão entrando na soma.</div>
-      <div class="table-wrap">
-        <table id="tblReconFiliais">
-          <thead>
-            <tr>
-              <th rowspan="2">Filial</th>
-              <th colspan="2">Saída — mesmo estado</th>
-              <th colspan="2">Entrada — mesmo estado</th>
-              <th colspan="2">Saída — fora do estado</th>
-              <th colspan="2">Entrada — fora do estado</th>
-              <th colspan="2">ICMS (fora do estado)</th>
-            </tr>
-            <tr>
-              <th class="num">Trib./Isento</th>
-              <th class="num">ST</th>
-              <th class="num">Trib./Isento</th>
-              <th class="num">ST</th>
-              <th class="num">Trib./Isento</th>
-              <th class="num">ST</th>
-              <th class="num">Trib./Isento</th>
-              <th class="num">ST</th>
-              <th class="num">Débito</th>
-              <th class="num">Crédito</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-          <tfoot></tfoot>
-        </table>
+      <div class="detail-block">
+        <div class="detail-block-label">Detalhamento por filial e por tipo de CFOP (Tributado/Isento × ST)</div>
+        <div class="table-wrap">
+          <table id="tblReconFiliais" class="table-compact">
+            <thead>
+              <tr>
+                <th rowspan="2">Filial</th>
+                <th colspan="2">Saída — mesmo estado</th>
+                <th colspan="2">Entrada — mesmo estado</th>
+                <th colspan="2">Saída — fora do estado</th>
+                <th colspan="2">Entrada — fora do estado</th>
+                <th colspan="2">ICMS (fora do estado)</th>
+              </tr>
+              <tr>
+                <th class="num">Trib./Isento</th>
+                <th class="num">ST</th>
+                <th class="num">Trib./Isento</th>
+                <th class="num">ST</th>
+                <th class="num">Trib./Isento</th>
+                <th class="num">ST</th>
+                <th class="num">Trib./Isento</th>
+                <th class="num">ST</th>
+                <th class="num">Débito</th>
+                <th class="num">Crédito</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -537,52 +580,62 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
     <div class="card">
       <div class="card-head">
         <h2>Painel — Compras, Vendas e ICMS</h2>
-        <div class="desc">Todas as filiais, período selecionado. Tributado = base de cálculo com ICMS destacado. Isento = valor declarado isento/não tributado. ST = mercadoria com substituição tributária. Outras = demais operações (transferência, uso e consumo, bonificação, serviços etc.).</div>
+        <div class="desc">Todas as filiais, período selecionado.</div>
       </div>
       <div class="grid-summary" id="dashKpis" style="margin-bottom:14px;"></div>
       <div class="grid-summary" id="dashMeters"></div>
     </div>
 
-    <div class="card">
-      <div class="card-head">
-        <h2>Composição das compras — por loja e total</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:16px;">
+      <div class="card">
+        <div class="card-head">
+          <h2>Composição das compras</h2>
+          <div class="desc">Total do grupo no período.</div>
+        </div>
+        <div class="donut-card" id="donutCompras"></div>
       </div>
-      <div class="chart-legend" id="dashLegendCompras"></div>
-      <div id="dashChartCompras"></div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Composição das vendas</h2>
+          <div class="desc">Total do grupo no período.</div>
+        </div>
+        <div class="donut-card" id="donutVendas"></div>
+      </div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <h2>Composição das vendas — por loja e total</h2>
+        <h2>Compras × vendas por loja</h2>
+        <div class="desc">Mesma escala para todas as lojas — barras mais longas = valores maiores.</div>
       </div>
-      <div class="chart-legend" id="dashLegendVendas"></div>
-      <div id="dashChartVendas"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <h2>Detalhamento por loja</h2>
+      <div class="pair-legend">
+        <div class="item"><span class="swatch" style="background:var(--accent)"></span>Compras</div>
+        <div class="item"><span class="swatch" style="background:var(--chart-2)"></span>Vendas</div>
       </div>
-      <div class="table-wrap">
-        <table id="tblDashDetalhe">
-          <thead>
-            <tr>
-              <th>Filial</th>
-              <th class="num">Compras — total</th>
-              <th class="num">% Tributado</th>
-              <th class="num">% Isento</th>
-              <th class="num">% ST</th>
-              <th class="num">Vendas — total</th>
-              <th class="num">% Tributado</th>
-              <th class="num">% Isento</th>
-              <th class="num">% ST</th>
-              <th class="num">ICMS débito</th>
-              <th class="num">ICMS crédito</th>
-              <th class="num">Saldo</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div id="pairChart"></div>
+      <div class="detail-block">
+        <div class="detail-block-label">Detalhamento por loja — composição e ICMS</div>
+        <div class="table-wrap">
+          <table id="tblDashDetalhe" class="table-compact">
+            <thead>
+              <tr>
+                <th>Filial</th>
+                <th class="num">Compras — total</th>
+                <th class="num">% Tributado</th>
+                <th class="num">% Isento</th>
+                <th class="num">% ST</th>
+                <th class="num">Vendas — total</th>
+                <th class="num">% Tributado</th>
+                <th class="num">% Isento</th>
+                <th class="num">% ST</th>
+                <th class="num">ICMS débito</th>
+                <th class="num">ICMS crédito</th>
+                <th class="num">Saldo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1347,6 +1400,32 @@ function sumTransfer(reg, tipo, codes, campo){
   }, 0);
 }
 
+function renderHeroStatus(containerId, opts){
+  var el = document.getElementById(containerId);
+  el.className = "hero-status " + (opts.ok ? "ok" : "bad");
+  el.innerHTML =
+    '<div class="hero-status-top">' +
+      '<div class="hero-status-icon">'+(opts.ok?"&#10003;":"!")+'</div>' +
+      '<div class="hero-status-text">' +
+        '<div class="hero-status-title">'+escapeHtml(opts.title)+'</div>' +
+        '<div class="hero-status-sub">'+escapeHtml(opts.sub)+'</div>' +
+      '</div>' +
+      '<div class="hero-status-diffwrap">' +
+        '<div class="hero-status-diff">R$ '+fmtBRL(Math.abs(opts.diffValue))+'</div>' +
+        '<div class="hero-status-difflbl">'+escapeHtml(opts.diffLabel)+'</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function renderCompareBars(containerId, rows){
+  var max = Math.max.apply(null, rows.map(function(r){return r.value;}).concat([0.01]));
+  document.getElementById(containerId).innerHTML = rows.map(function(r){
+    var pct = max>0 ? Math.max(3, r.value/max*100) : 3;
+    return '<div class="compare-row"><div class="compare-label">'+escapeHtml(r.label)+'</div>' +
+      '<div class="compare-track"><div class="compare-fill" style="width:'+pct+'%; background:'+r.color+'">R$ '+fmtBRL(r.value)+'</div></div></div>';
+  }).join("");
+}
+
 function renderReconciliacao(){
   var periodo = state.selPeriodo;
   var totais = {outEstado:0, inEstado:0, outInter:0, inInter:0, icmsDeb:0, icmsCred:0};
@@ -1404,25 +1483,31 @@ function renderReconciliacao(){
 
   var diffEstado = totais.outEstado - totais.inEstado;
   var okEstado = Math.abs(diffEstado) < 0.01;
-  var grandEstado = document.getElementById("reconGrandEstado");
-  grandEstado.className = "recon-grand " + (okEstado ? "ok" : "bad");
-  grandEstado.innerHTML =
-    '<div><div class="lbl">Mesmo estado — saída</div><div class="big">R$ '+fmtBRL(totais.outEstado)+'</div></div>' +
-    '<div><div class="lbl">Mesmo estado — entrada</div><div class="big">R$ '+fmtBRL(totais.inEstado)+'</div></div>' +
-    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(okEstado?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffEstado)+'</div></div>' +
-    '<div>'+badgeHtml(okEstado?"ok":"bad")+'</div>';
+  renderHeroStatus("heroEstado", {
+    ok: okEstado,
+    title: okEstado ? "Transferências dentro do estado batem" : "Transferências dentro do estado não batem",
+    sub: "Saída total (5.15x/5.40x) contra entrada total (1.15x/1.40x) de todas as filiais. Sem ICMS, conforme LC 204/2023.",
+    diffValue: diffEstado,
+    diffLabel: okEstado ? "diferença" : "falta reconciliar"
+  });
+  renderCompareBars("compareEstado", [
+    {label:"Saída", value:totais.outEstado, color:"var(--accent)"},
+    {label:"Entrada", value:totais.inEstado, color:"var(--chart-2)"}
+  ]);
 
   var diffInter = totais.icmsDeb - totais.icmsCred;
   var okInter = Math.abs(diffInter) < 0.01;
-  var grandInter = document.getElementById("reconGrandInterestadual");
-  grandInter.className = "recon-grand " + (okInter ? "ok" : "bad");
-  grandInter.innerHTML =
-    '<div><div class="lbl">Fora do estado — saída</div><div class="big">R$ '+fmtBRL(totais.outInter)+'</div></div>' +
-    '<div><div class="lbl">Fora do estado — entrada</div><div class="big">R$ '+fmtBRL(totais.inInter)+'</div></div>' +
-    '<div><div class="lbl">Fora do estado — ICMS débito</div><div class="big">R$ '+fmtBRL(totais.icmsDeb)+'</div></div>' +
-    '<div><div class="lbl">Fora do estado — ICMS crédito</div><div class="big">R$ '+fmtBRL(totais.icmsCred)+'</div></div>' +
-    '<div><div class="lbl">Diferença (ICMS)</div><div class="big" style="color:'+(okInter?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffInter)+'</div></div>' +
-    '<div>'+badgeHtml(okInter?"ok":"bad")+'</div>';
+  renderHeroStatus("heroInter", {
+    ok: okInter,
+    title: okInter ? "ICMS interestadual bate" : "ICMS interestadual não bate",
+    sub: "Débito gerado nas saídas para outro estado (6.15x/6.40x) contra crédito tomado nas entradas (2.15x/2.40x) de todas as filiais.",
+    diffValue: diffInter,
+    diffLabel: okInter ? "diferença" : "falta reconciliar"
+  });
+  renderCompareBars("compareInter", [
+    {label:"Débito", value:totais.icmsDeb, color:"var(--accent)"},
+    {label:"Crédito", value:totais.icmsCred, color:"var(--chart-2)"}
+  ]);
 
   return okEstado && okInter;
 }
@@ -1455,12 +1540,14 @@ function renderResumo(){
     var r = regFor(f.id, state.selPeriodo);
     var tf = computeTotals(r);
     totalDeb += tf.debito; totalCred += tf.credito;
-    var situ = tf.saldo>=0 ? badgeHtml("bad") : badgeHtml("ok");
+    var situ = tf.saldo>=0
+      ? '<span class="badge" style="background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-soft-border);"><span class="dot"></span>A recolher</span>'
+      : '<span class="badge ok"><span class="dot"></span>Saldo credor</span>';
     rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
       '<td class="num">'+fmtBRL(tf.debito)+'</td>' +
       '<td class="num">'+fmtBRL(tf.credito)+'</td>' +
       '<td class="num">'+fmtBRL(tf.saldo)+'</td>' +
-      '<td>'+situ+' '+(tf.saldo>=0?"a recolher":"credor")+'</td></tr>';
+      '<td>'+situ+'</td></tr>';
   });
   document.querySelector("#tblResumoPorFilial tbody").innerHTML = rowsHtml;
 
@@ -1512,32 +1599,58 @@ function meterCard(label, pct){
     '<div class="meter"><div class="meter-fill" style="width:'+clamped+'%"></div></div></div>';
 }
 
-function renderChartLegend(containerId){
-  document.getElementById(containerId).innerHTML = CHART_CATS.map(function(c){
-    return '<div class="item"><span class="swatch" style="background:'+c.color+'"></span>'+escapeHtml(c.label)+'</div>';
+function renderDonut(containerId, bucket, centerLabel){
+  var el = document.getElementById(containerId);
+  var total = bucket.total;
+  var cats = CHART_CATS.map(function(c){
+    return {label:c.label, color:c.color, value:bucket[c.key]||0};
+  }).filter(function(c){ return c.value > 0; });
+
+  var size=188, cx=94, cy=94, r=81, sw=26, gap=3;
+  var circumference = 2*Math.PI*r;
+  var cumulative = 0;
+  var circles = cats.map(function(c){
+    var rawLen = total>0 ? (c.value/total*circumference) : 0;
+    var segLen = Math.max(0, rawLen-gap);
+    var dashoffset = -cumulative;
+    cumulative += rawLen;
+    var pct = total>0 ? c.value/total*100 : 0;
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+c.color+'" stroke-width="'+sw+'" ' +
+      'stroke-dasharray="'+segLen.toFixed(2)+' '+(circumference-segLen).toFixed(2)+'" stroke-dashoffset="'+dashoffset.toFixed(2)+'">' +
+      '<title>'+escapeHtml(c.label)+': R$ '+fmtBRL(c.value)+' ('+fmtPct(pct)+')</title></circle>';
   }).join("");
+
+  var svg = total>0
+    ? '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><g transform="rotate(-90 '+cx+' '+cy+')">'+circles+'</g></svg>'
+    : '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--surface-3)" stroke-width="'+sw+'"></circle></svg>';
+
+  var legend = cats.length ? cats.map(function(c){
+    var pct = total>0 ? c.value/total*100 : 0;
+    return '<div class="donut-legend-row"><span class="donut-legend-swatch" style="background:'+c.color+'"></span>' +
+      '<span class="donut-legend-label">'+escapeHtml(c.label)+'</span>' +
+      '<span class="donut-legend-value">R$ '+fmtBRL(c.value)+'</span>' +
+      '<span class="donut-legend-pct">'+fmtPct(pct)+'</span></div>';
+  }).join("") : '<div class="helptext" style="margin:0;">Sem movimento no período.</div>';
+
+  el.innerHTML =
+    '<div class="donut-wrap">'+svg+
+      '<div class="donut-center"><div class="value">R$ '+fmtBRL(total)+'</div><div class="label">'+escapeHtml(centerLabel)+'</div></div>' +
+    '</div>' +
+    '<div class="donut-legend">'+legend+'</div>';
 }
 
-function renderStackedBarChart(containerId, rows, maxTotal){
-  document.getElementById(containerId).innerHTML = rows.map(function(row){
-    var labelCls = row.isTotal ? "chart-row-label total" : "chart-row-label";
-    if(row.total <= 0){
-      return '<div class="chart-row"><div class="'+labelCls+'">'+escapeHtml(row.label)+'</div>' +
-        '<div class="chart-bar-track"><div class="chart-empty">sem movimento</div></div>' +
-        '<div class="chart-row-value">R$ 0,00</div></div>';
+function renderPairChart(containerId, perFilial){
+  var maxVal = Math.max.apply(null, perFilial.map(function(x){ return Math.max(x.compras.total, x.vendas.total); }).concat([0.01]));
+  document.getElementById(containerId).innerHTML = perFilial.map(function(x){
+    if(x.compras.total<=0 && x.vendas.total<=0){
+      return '<div class="pair-block"><div class="pair-block-label">'+escapeHtml(x.filial.nome)+'</div><div class="pair-empty">sem movimento</div></div>';
     }
-    var widthPct = maxTotal>0 ? Math.max(1, row.total/maxTotal*100) : 0;
-    var segs = CHART_CATS.map(function(c){
-      var v = row[c.key] || 0;
-      if(v<=0) return "";
-      var pctRow = v/row.total*100;
-      var absPct = widthPct * (pctRow/100); // share of the FULL chart width, not just this row's bar
-      var label = absPct>=7 ? fmtPct(pctRow) : "";
-      return '<div class="chart-seg" style="flex:'+v+' 0 0px; background:'+c.color+'" title="'+escapeHtml(c.label)+': R$ '+fmtBRL(v)+' ('+fmtPct(pctRow)+' desta barra) — '+escapeHtml(row.label)+'">'+label+'</div>';
-    }).join("");
-    return '<div class="chart-row"><div class="'+labelCls+'">'+escapeHtml(row.label)+'</div>' +
-      '<div class="chart-bar-track"><div class="chart-bar" style="width:'+widthPct+'%">'+segs+'</div></div>' +
-      '<div class="chart-row-value">R$ '+fmtBRL(row.total)+'</div></div>';
+    var pctC = Math.max(1, x.compras.total/maxVal*100);
+    var pctV = Math.max(1, x.vendas.total/maxVal*100);
+    return '<div class="pair-block"><div class="pair-block-label">'+escapeHtml(x.filial.nome)+'</div>' +
+      '<div class="pair-line" title="Compras: R$ '+fmtBRL(x.compras.total)+'"><div class="pair-track"><div class="pair-fill compras" style="width:'+pctC+'%"></div></div><div class="pair-value">R$ '+fmtBRL(x.compras.total)+'</div></div>' +
+      '<div class="pair-line" title="Vendas: R$ '+fmtBRL(x.vendas.total)+'"><div class="pair-track"><div class="pair-fill vendas" style="width:'+pctV+'%"></div></div><div class="pair-value">R$ '+fmtBRL(x.vendas.total)+'</div></div>' +
+      '</div>';
   }).join("");
 }
 
@@ -1595,20 +1708,9 @@ function renderDashboard(){
     meterCard("Compra isenta sobre total de compras", pctCompraIsenta) +
     meterCard("Venda tributada sobre total de vendas", pctVendaTributada);
 
-  renderChartLegend("dashLegendCompras");
-  renderChartLegend("dashLegendVendas");
-
-  var rowsCompras = perFilial.map(function(x){
-    return {label:x.filial.nome, total:x.compras.total, tributado:x.compras.tributado, isento:x.compras.isento, st:x.compras.st, outras:x.compras.outras};
-  });
-  rowsCompras.push({label:"Total (grupo)", isTotal:true, total:totalCompras.total, tributado:totalCompras.tributado, isento:totalCompras.isento, st:totalCompras.st, outras:totalCompras.outras});
-  renderStackedBarChart("dashChartCompras", rowsCompras, totalCompras.total);
-
-  var rowsVendas = perFilial.map(function(x){
-    return {label:x.filial.nome, total:x.vendas.total, tributado:x.vendas.tributado, isento:x.vendas.isento, st:x.vendas.st, outras:x.vendas.outras};
-  });
-  rowsVendas.push({label:"Total (grupo)", isTotal:true, total:totalVendas.total, tributado:totalVendas.tributado, isento:totalVendas.isento, st:totalVendas.st, outras:totalVendas.outras});
-  renderStackedBarChart("dashChartVendas", rowsVendas, totalVendas.total);
+  renderDonut("donutCompras", totalCompras, "Compras");
+  renderDonut("donutVendas", totalVendas, "Vendas");
+  renderPairChart("pairChart", perFilial);
 
   var rowsHtml = perFilial.map(function(x){ return dashTableRow(x.filial.nome, x, false); }).join("") +
     dashTableRow("Total (grupo)", {compras:totalCompras, vendas:totalVendas, icmsDeb:totalIcmsDeb, icmsCred:totalIcmsCred}, true);
