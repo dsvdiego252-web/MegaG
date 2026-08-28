@@ -306,7 +306,9 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 /* simple side-by-side comparison bars (saída x entrada, compras x vendas...) */
 .compare-bars{display:flex; flex-direction:column; gap:9px;}
 .compare-row{display:flex; align-items:center; gap:12px;}
-.compare-label{width:64px; flex:none; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); font-weight:700;}
+.compare-label{width:118px; flex:none; font-size:10.5px; line-height:1.25; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); font-weight:700;}
+.compare-group-label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); font-weight:700; margin:16px 0 8px;}
+.compare-group-label:first-child{margin-top:0;}
 .compare-track{flex:1; background:rgba(127,127,127,.14); border-radius:6px; height:28px; overflow:hidden; min-width:0;}
 .compare-fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; color:#fff; font-size:12px; font-weight:700; font-family:"IBM Plex Mono",monospace; white-space:nowrap; min-width:fit-content; transition:width .2s;}
 
@@ -504,11 +506,15 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;">
         <div>
           <div class="hero-status" id="heroEstado"></div>
-          <div class="compare-bars" id="compareEstado" style="margin-top:14px;"></div>
+          <div class="compare-group-label">Valor da mercadoria transferida (contábil), por tipo</div>
+          <div class="compare-bars" id="compareEstado"></div>
         </div>
         <div>
           <div class="hero-status" id="heroInter"></div>
-          <div class="compare-bars" id="compareInter" style="margin-top:14px;"></div>
+          <div class="compare-group-label">Valor da mercadoria transferida (contábil), por tipo</div>
+          <div class="compare-bars" id="compareInterValor"></div>
+          <div class="compare-group-label">ICMS da transferência</div>
+          <div class="compare-bars" id="compareInterIcms"></div>
         </div>
       </div>
       <div class="detail-block">
@@ -583,7 +589,11 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
         <div class="desc">Todas as filiais, período selecionado.</div>
       </div>
       <div class="grid-summary" id="dashKpis" style="margin-bottom:14px;"></div>
-      <div class="grid-summary" id="dashMeters"></div>
+      <div class="grid-summary" id="dashMeterIcms" style="margin-bottom:18px;"></div>
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:700; margin-bottom:8px;">Composição das compras (% do total)</div>
+      <div class="grid-summary" id="dashMetersCompras" style="margin-bottom:18px;"></div>
+      <div style="font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:700; margin-bottom:8px;">Composição das vendas (% do total)</div>
+      <div class="grid-summary" id="dashMetersVendas"></div>
     </div>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:16px;">
@@ -1422,7 +1432,7 @@ function renderCompareBars(containerId, rows){
   document.getElementById(containerId).innerHTML = rows.map(function(r){
     var pct = max>0 ? Math.max(3, r.value/max*100) : 3;
     return '<div class="compare-row"><div class="compare-label">'+escapeHtml(r.label)+'</div>' +
-      '<div class="compare-track"><div class="compare-fill" style="width:'+pct+'%; background:'+r.color+'">R$ '+fmtBRL(r.value)+'</div></div></div>';
+      '<div class="compare-track"><div class="compare-fill" style="width:'+pct+'%; background:'+r.color+'; opacity:'+(r.opacity||1)+'">R$ '+fmtBRL(r.value)+'</div></div></div>';
   }).join("");
 }
 
@@ -1491,8 +1501,10 @@ function renderReconciliacao(){
     diffLabel: okEstado ? "diferença" : "falta reconciliar"
   });
   renderCompareBars("compareEstado", [
-    {label:"Saída", value:totais.outEstado, color:"var(--accent)"},
-    {label:"Entrada", value:totais.inEstado, color:"var(--chart-2)"}
+    {label:"Saída — Trib./Isento", value:t.outEstadoTrib, color:"var(--accent)"},
+    {label:"Saída — ST", value:t.outEstadoSt, color:"var(--accent)", opacity:.5},
+    {label:"Entrada — Trib./Isento", value:t.inEstadoTrib, color:"var(--chart-2)"},
+    {label:"Entrada — ST", value:t.inEstadoSt, color:"var(--chart-2)", opacity:.5}
   ]);
 
   var diffInter = totais.icmsDeb - totais.icmsCred;
@@ -1504,7 +1516,13 @@ function renderReconciliacao(){
     diffValue: diffInter,
     diffLabel: okInter ? "diferença" : "falta reconciliar"
   });
-  renderCompareBars("compareInter", [
+  renderCompareBars("compareInterValor", [
+    {label:"Saída — Trib./Isento", value:t.outInterTrib, color:"var(--accent)"},
+    {label:"Saída — ST", value:t.outInterSt, color:"var(--accent)", opacity:.5},
+    {label:"Entrada — Trib./Isento", value:t.inInterTrib, color:"var(--chart-2)"},
+    {label:"Entrada — ST", value:t.inInterSt, color:"var(--chart-2)", opacity:.5}
+  ]);
+  renderCompareBars("compareInterIcms", [
     {label:"Débito", value:totais.icmsDeb, color:"var(--accent)"},
     {label:"Crédito", value:totais.icmsCred, color:"var(--chart-2)"}
   ]);
@@ -1700,13 +1718,20 @@ function renderDashboard(){
     statCard("Total de vendas (grupo)", "R$ "+fmtBRL(totalVendas.total)) +
     statCard(saldo>=0?"ICMS a recolher (grupo)":"Saldo credor (grupo)", "R$ "+fmtBRL(Math.abs(saldo)), saldo>=0?"bad":"ok", periodoLabel(periodo));
 
-  var pctIcmsVendas = totalVendas.total>0 ? (saldo/totalVendas.total*100) : NaN;
-  var pctCompraIsenta = totalCompras.total>0 ? (totalCompras.isento/totalCompras.total*100) : NaN;
-  var pctVendaTributada = totalVendas.total>0 ? (totalVendas.tributado/totalVendas.total*100) : NaN;
-  document.getElementById("dashMeters").innerHTML =
-    meterCard("ICMS a recolher sobre as vendas", pctIcmsVendas) +
-    meterCard("Compra isenta sobre total de compras", pctCompraIsenta) +
-    meterCard("Venda tributada sobre total de vendas", pctVendaTributada);
+  var pct = function(part, whole){ return whole>0 ? (part/whole*100) : NaN; };
+
+  document.getElementById("dashMeterIcms").innerHTML =
+    meterCard("ICMS a recolher sobre as vendas", pct(saldo, totalVendas.total));
+
+  document.getElementById("dashMetersCompras").innerHTML =
+    meterCard("Compras tributadas", pct(totalCompras.tributado, totalCompras.total)) +
+    meterCard("Compras isentas", pct(totalCompras.isento, totalCompras.total)) +
+    meterCard("Compras com substituição tributária (ST)", pct(totalCompras.st, totalCompras.total));
+
+  document.getElementById("dashMetersVendas").innerHTML =
+    meterCard("Vendas tributadas", pct(totalVendas.tributado, totalVendas.total)) +
+    meterCard("Vendas isentas", pct(totalVendas.isento, totalVendas.total)) +
+    meterCard("Vendas com substituição tributária (ST)", pct(totalVendas.st, totalVendas.total));
 
   renderDonut("donutCompras", totalCompras, "Compras");
   renderDonut("donutVendas", totalVendas, "Vendas");
