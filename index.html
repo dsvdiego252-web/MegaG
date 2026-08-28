@@ -357,6 +357,9 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 
   <!-- LANÇAMENTOS -->
   <div class="panel active" id="panel-lancamentos">
+    <div class="helptext" id="consolidadoNote" style="display:none; margin-bottom:12px; padding:9px 12px; border:1px solid var(--accent-soft-border); background:var(--accent-soft); border-radius:8px; color:var(--text);">
+      Modo Resumo: soma automaticamente os lançamentos de todas as lojas por CFOP, somente leitura. Para editar, selecione uma loja específica.
+    </div>
     <div class="card">
       <div class="card-head">
         <h2>Entradas — Valores Fiscais</h2>
@@ -548,7 +551,7 @@ var CFOP_DB = {
   "1409":{d:"Transferência para comercialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST — sem novo destaque de ICMS próprio."},
   "1411":{d:"Devolução de venda em operação com ICMS-ST", g:"st", c:"st", obs:"Devolução de mercadoria com substituição tributária."},
   "1556":{d:"Compra de material para uso ou consumo", g:"uso_consumo", c:"vedado", obs:"Direito ao crédito de uso e consumo segue prorrogado (LC 171/2019 e LC 210/2023, atualmente até 2033) — correto não haver crédito."},
-  "1910":{d:"Entrada de bonificação, doação ou brinde", g:"bonificacao", c:"nao", obs:"Normalmente sem destaque de ICMS; se o remetente destacou imposto, avaliar se cabe crédito conforme legislação da UF de origem."},
+  "1910":{d:"Entrada de bonificação, doação ou brinde", g:"bonificacao", c:"sim", obs:"Gera direito normal a crédito de ICMS quando há destaque na nota fiscal — trata-se de uma redução de preço, não de não incidência. Não gera crédito de PIS/COFINS (regime não-cumulativo não admite crédito sobre parcela sem custo/contraprestação)."},
   "1911":{d:"Entrada de amostra grátis", g:"bonificacao", c:"nao", obs:"Amostra grátis sem valor comercial, sem crédito de ICMS."},
   "1917":{d:"Entrada de mercadoria recebida em consignação", g:"outras", c:"nao", obs:"Crédito diferido para o momento da efetiva compra (quando a mercadoria consignada for vendida)."},
   "1920":{d:"Entrada de vasilhame ou sacaria", g:"outras", c:"nao", obs:"Operação de retorno de embalagem, sem tributação."},
@@ -613,7 +616,7 @@ var CFOP_DB = {
   "2353":{d:"Aquisição de serviço de transporte por estabelecimento comercial — outro estado", g:"servico", c:"sim", obs:"Frete interestadual sobre compra (CIF) dá direito a crédito quando vinculado a mercadoria tributada."},
   "2551":{d:"Compra de bem para o ativo imobilizado — outro estado", g:"ativo_imobilizado", c:"sim", obs:"Crédito admitido pela alíquota interestadual, apropriado em 1/48 por mês via CIAP — não integralmente no mês da entrada."},
   "2556":{d:"Compra de material para uso ou consumo — outro estado", g:"uso_consumo", c:"vedado", obs:"Direito ao crédito de uso e consumo segue prorrogado (LC 171/2019 e LC 210/2023, atualmente até 2033) — não deveria haver crédito aqui."},
-  "2910":{d:"Entrada de bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"nao", obs:"Normalmente sem destaque de ICMS; se o remetente destacou imposto, avaliar se cabe crédito conforme legislação da UF de origem — confirme com a nota fiscal."},
+  "2910":{d:"Entrada de bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"sim", obs:"Gera direito normal a crédito de ICMS pela alíquota interestadual quando há destaque na nota fiscal. Não gera crédito de PIS/COFINS (regime não-cumulativo não admite crédito sobre parcela sem custo/contraprestação)."},
   "5553":{d:"Devolução de compra de bem para o ativo imobilizado", g:"devolucao", c:"sim", obs:"Estorna o crédito de CIAP tomado sobre o bem devolvido ao fornecedor."},
   "5556":{d:"Venda de material de uso ou consumo", g:"outras", c:"revisar", obs:"Verifique se esta saída deveria gerar débito normal de ICMS (é uma venda de bem/mercadoria, ainda que originalmente classificada como uso/consumo) ou se está corretamente amparada por não incidência específica."},
   "5901":{d:"Remessa para industrialização por conta e ordem do adquirente", g:"outras", c:"nao", obs:"Remessa para industrialização por terceiros — sem débito próprio nesta etapa; o débito ocorre na saída final do produto industrializado."},
@@ -644,7 +647,7 @@ var SEED_FILIAIS = [
   {id:"matriz", nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"},
   {id:"filial_0002", nome:"Filial 0002", uf:"", cnpj:"19.043.440/0002-35", ie:"720035126118"},
   {id:"filial_0003", nome:"Filial 0003", uf:"MG", cnpj:"19.043.440/0003-16", ie:"0033160300030"},
-  {id:"filial_zl", nome:"Filial ZL", uf:"", cnpj:"19.043.440/0004-05", ie:"130721189116"},
+  {id:"filial_zl", nome:"Filial ZL 004", uf:"", cnpj:"19.043.440/0004-05", ie:"130721189116"},
   {id:"filial_0005", nome:"Filial 0005", uf:"", cnpj:"19.043.440/0005-88", ie:"181589998117"}
 ];
 var SEED_PERIODOS = [
@@ -821,6 +824,10 @@ function mergeSeeds(state){
   });
   if(!state.selFilial && state.filiais.length) state.selFilial = state.filiais[0].id;
   if(!state.selPeriodo && state.periodos.length) state.selPeriodo = state.periodos[0].id;
+
+  // migração leve: nome antigo da Filial ZL, só se o usuário não tiver renomeado
+  var zl = state.filiais.find(function(f){return f.id==="filial_zl";});
+  if(zl && zl.nome === "Filial ZL") zl.nome = "Filial ZL 004";
 }
 
 var state = null;
@@ -837,8 +844,35 @@ function saveState(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
 }
 
+var CONSOLIDADO_ID = "__todas__";
+function isConsolidado(){ return state.selFilial === CONSOLIDADO_ID; }
+
 function regKey(filialId, periodoId){ return filialId+"|"+periodoId; }
+function buildConsolidadoReg(periodoId){
+  var agg = {entradas:{}, saidas:{}};
+  state.filiais.forEach(function(f){
+    var reg = regFor(f.id, periodoId);
+    ["entradas","saidas"].forEach(function(tipo){
+      (reg[tipo]||[]).forEach(function(r){
+        var k = r.cfop || "";
+        if(!agg[tipo][k]){
+          agg[tipo][k] = {cfop:r.cfop, contabil:0, base:0, imposto:0, isenta:0, outras:0};
+        }
+        agg[tipo][k].contabil += parseNumberBR(r.contabil);
+        agg[tipo][k].base += parseNumberBR(r.base);
+        agg[tipo][k].imposto += parseNumberBR(r.imposto);
+        agg[tipo][k].isenta += parseNumberBR(r.isenta);
+        agg[tipo][k].outras += parseNumberBR(r.outras);
+      });
+    });
+  });
+  function toSortedArray(obj){
+    return Object.keys(obj).sort().map(function(k){ return obj[k]; });
+  }
+  return {entradas: toSortedArray(agg.entradas), saidas: toSortedArray(agg.saidas)};
+}
 function currentReg(){
+  if(isConsolidado()) return buildConsolidadoReg(state.selPeriodo);
   var key = regKey(state.selFilial, state.selPeriodo);
   if(!state.registros[key]) state.registros[key] = {entradas:[], saidas:[]};
   return state.registros[key];
@@ -880,6 +914,7 @@ function cfopInfo(code){
   return CFOP_DB[code] || null;
 }
 function filialName(id){
+  if(id === CONSOLIDADO_ID) return "Resumo (todas as lojas)";
   var f = state.filiais.find(function(x){return x.id===id;});
   return f ? f.nome : id;
 }
@@ -899,6 +934,11 @@ function renderFilialSelect(){
     if(f.id === state.selFilial) opt.selected = true;
     sel.appendChild(opt);
   });
+  var optAll = document.createElement("option");
+  optAll.value = CONSOLIDADO_ID;
+  optAll.textContent = "— Resumo (todas as lojas) —";
+  if(state.selFilial === CONSOLIDADO_ID) optAll.selected = true;
+  sel.appendChild(optAll);
 }
 function renderPeriodoSelect(){
   var sel = document.getElementById("selPeriodo");
@@ -912,8 +952,12 @@ function renderPeriodoSelect(){
   });
 }
 function renderCompanyLine(){
-  var f = state.filiais.find(function(x){return x.id===state.selFilial;});
   var el = document.getElementById("companyLine");
+  if(isConsolidado()){
+    el.textContent = "Nova Mega G Atacadista de Alimentos S/A · Resumo consolidado — " + state.filiais.length + " loja(s) · " + periodoLabel(state.selPeriodo);
+    return;
+  }
+  var f = state.filiais.find(function(x){return x.id===state.selFilial;});
   if(f){
     el.textContent = "Nova Mega G Atacadista de Alimentos S/A · " + f.nome + (f.cnpj?" · CNPJ "+f.cnpj:"") + (f.ie?" · IE "+f.ie:"") + " · " + periodoLabel(state.selPeriodo);
   }
@@ -954,29 +998,42 @@ function renderFiliaisPanel(){
 }
 
 /* ===================== rendering: lançamentos tables ===================== */
-function buildRow(tableBody, item, idx, tipo){
+function buildRow(tableBody, item, idx, tipo, readOnly){
   var tr = document.createElement("tr");
   var info = cfopInfo(item.cfop);
-  tr.innerHTML =
-    '<td><input class="cfop-input mono" data-idx="'+idx+'" data-k="cfop" value="'+escapeHtml(item.cfop)+'" maxlength="4" placeholder="0000"></td>' +
-    '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : '<span style="color:var(--text-faint)">CFOP não catalogado</span>')+'</td>' +
-    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="contabil" value="'+fmtBRL(item.contabil)+'"></td>' +
-    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="base" value="'+fmtBRL(item.base)+'"></td>' +
-    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="imposto" value="'+fmtBRL(item.imposto)+'"></td>' +
-    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="isenta" value="'+fmtBRL(item.isenta)+'"></td>' +
-    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="outras" value="'+fmtBRL(item.outras)+'"></td>' +
-    '<td><button class="row-del" data-idx="'+idx+'" title="Remover linha">✕</button></td>';
+  if(readOnly){
+    tr.innerHTML =
+      '<td class="mono" style="font-weight:600; padding-left:10px;">'+escapeHtml(item.cfop||"—")+'</td>' +
+      '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : '<span style="color:var(--text-faint)">CFOP não catalogado</span>')+'</td>' +
+      '<td class="num">'+fmtBRL(item.contabil)+'</td>' +
+      '<td class="num">'+fmtBRL(item.base)+'</td>' +
+      '<td class="num">'+fmtBRL(item.imposto)+'</td>' +
+      '<td class="num">'+fmtBRL(item.isenta)+'</td>' +
+      '<td class="num">'+fmtBRL(item.outras)+'</td>' +
+      '<td></td>';
+  } else {
+    tr.innerHTML =
+      '<td><input class="cfop-input mono" data-idx="'+idx+'" data-k="cfop" value="'+escapeHtml(item.cfop)+'" maxlength="4" placeholder="0000"></td>' +
+      '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : '<span style="color:var(--text-faint)">CFOP não catalogado</span>')+'</td>' +
+      '<td class="num"><input class="num" data-idx="'+idx+'" data-k="contabil" value="'+fmtBRL(item.contabil)+'"></td>' +
+      '<td class="num"><input class="num" data-idx="'+idx+'" data-k="base" value="'+fmtBRL(item.base)+'"></td>' +
+      '<td class="num"><input class="num" data-idx="'+idx+'" data-k="imposto" value="'+fmtBRL(item.imposto)+'"></td>' +
+      '<td class="num"><input class="num" data-idx="'+idx+'" data-k="isenta" value="'+fmtBRL(item.isenta)+'"></td>' +
+      '<td class="num"><input class="num" data-idx="'+idx+'" data-k="outras" value="'+fmtBRL(item.outras)+'"></td>' +
+      '<td><button class="row-del" data-idx="'+idx+'" title="Remover linha">✕</button></td>';
+  }
   tableBody.appendChild(tr);
 }
 
 function renderLancTable(tipo){
   var reg = currentReg();
   var list = reg[tipo];
+  var readOnly = isConsolidado();
   var table = document.getElementById(tipo === "entradas" ? "tblEntradas" : "tblSaidas");
   var tbody = table.querySelector("tbody");
   var tfoot = table.querySelector("tfoot");
   tbody.innerHTML = "";
-  list.forEach(function(item, idx){ buildRow(tbody, item, idx, tipo); });
+  list.forEach(function(item, idx){ buildRow(tbody, item, idx, tipo, readOnly); });
 
   var totals = list.reduce(function(acc,r){
     acc.contabil += parseNumberBR(r.contabil);
@@ -993,6 +1050,11 @@ function renderLancTable(tipo){
     '<td class="num">'+fmtBRL(totals.imposto)+'</td>' +
     '<td class="num">'+fmtBRL(totals.isenta)+'</td>' +
     '<td class="num">'+fmtBRL(totals.outras)+'</td><td></td></tr>';
+
+  var btnAdd = document.getElementById(tipo === "entradas" ? "btnAddEntrada" : "btnAddSaida");
+  if(btnAdd) btnAdd.disabled = readOnly;
+
+  if(readOnly) return;
 
   tbody.querySelectorAll("input").forEach(function(inp){
     inp.addEventListener("change", function(){
@@ -1140,8 +1202,8 @@ function renderReconciliacao(){
     var inn = sumTransfer(reg, "entradas", TRANSFER_CODES_IN);
     totalOut += out; totalIn += inn;
     var saldo = out - inn;
-    var leitura = saldo === 0 ? "Sem transferências no período" :
-      (saldo > 0 ? "Remeteu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que recebeu" : "Recebeu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que remeteu");
+    var leitura = saldo === 0 ? "Sem transferências no período (ou entradas = saídas)" :
+      (saldo > 0 ? "Remeteu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que recebeu — normal para Matriz/centro de distribuição" : "Recebeu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que remeteu — normal para uma filial de venda");
     rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
       '<td class="num">'+fmtBRL(out)+'</td>' +
       '<td class="num">'+fmtBRL(inn)+'</td>' +
@@ -1217,8 +1279,8 @@ var STATIC_SUGGESTIONS = [
    text:"Na Matriz, o CFOP 1.949 concentrou R$ 1.082.505,50 em \"outra entrada não especificada\" — mais de 13% do total de entradas do período. Esse volume deveria estar pulverizado em códigos específicos (compra, devolução, uso e consumo, serviço). Fiscalizações tendem a olhar com atenção redobrada para CFOPs genéricos com valor relevante."},
   {icon:"⇄", title:"Padronize o cruzamento mensal Matriz × Filiais antes de fechar a apuração",
    text:"Feche um checklist mensal: para cada remessa em transferência da Matriz, confirme o recebimento na filial (mesmo valor contábil, mesmo período ou o seguinte se em trânsito). Divergências recorrentes geralmente indicam erro de CFOP (uso de código de venda em vez de transferência) ou mercadoria não escriturada na chegada."},
-  {icon:"↺", title:"Estorno de crédito em bonificações e doações (CFOP 5.910/6.910)",
-   text:"Diversos estados exigem o estorno proporcional do crédito de ICMS da compra quando a mercadoria sai como bonificação/doação sem novo débito. Verifique a legislação da UF de cada filial e, se aplicável, monte uma rotina de estorno vinculada a essas saídas."},
+  {icon:"↺", title:"Bonificações (CFOP 1.910/2.910/5.910/6.910): ICMS normal, PIS/COFINS não",
+   text:"Na entrada (1.910/2.910), o crédito de ICMS é normal quando a nota traz o imposto destacado — bonificação é redução de preço, não isenção. O que não gera é crédito de PIS/COFINS sobre a parcela bonificada, por não haver custo/contraprestação no regime não-cumulativo. Na saída (5.910/6.910), verifique a legislação de cada UF quanto à exigência de estorno proporcional do crédito de ICMS da compra vinculada à mercadoria doada."},
   {icon:"⏳", title:"Uso e consumo — acompanhe o prazo legal do direito ao crédito",
    text:"O direito ao crédito de ICMS sobre material de uso e consumo (CFOP 1.556/2.556) segue postergado — atualmente até 2033 (LC 171/2019 e LC 210/2023). Mantenha esses lançamentos sem crédito, mas monitore alterações na legislação, pois qualquer antecipação do prazo muda a apuração imediatamente."},
   {icon:"%", title:"Confira a alíquota efetiva por grupo de produto",
@@ -1344,6 +1406,8 @@ function exportCsv(tipo){
 
 /* ===================== render all ===================== */
 function renderAll(){
+  var note = document.getElementById("consolidadoNote");
+  if(note) note.style.display = isConsolidado() ? "block" : "none";
   renderLancTable("entradas");
   renderLancTable("saidas");
   renderClassificacao();
