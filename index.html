@@ -603,7 +603,21 @@ var CFOP_DB = {
   "6910":{d:"Remessa em bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"nao", obs:"Verificar exigência de estorno proporcional de crédito conforme legislação da UF de origem."},
   "6915":{d:"Remessa para conserto ou reparo — outro estado", g:"outras", c:"nao", obs:"Operação com suspensão do ICMS."},
   "6920":{d:"Remessa de vasilhame ou sacaria — outro estado", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
-  "6949":{d:"Outra saída não especificada — outro estado", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."}
+  "6949":{d:"Outra saída não especificada — outro estado", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."},
+
+  // ---- Ativo imobilizado, industrialização por terceiros e diversos (vistos em filiais) ----
+  "1124":{d:"Industrialização efetuada por outra empresa", g:"outras", c:"revisar", obs:"Código pouco comum para atacadista puro — confirme se refere-se a industrialização por conta de terceiros ou outra operação, e valide o tratamento de crédito caso a caso."},
+  "1551":{d:"Compra de bem para o ativo imobilizado", g:"ativo_imobilizado", c:"sim", obs:"Crédito admitido, mas deve ser apropriado à razão de 1/48 por mês via CIAP (Bloco G do SPED Fiscal), não integralmente no mês da entrada."},
+  "1653":{d:"Compra de combustível ou lubrificante por consumidor final", g:"uso_consumo", c:"vedado", obs:"Combustíveis em regra são monofásicos/ST; sem crédito para consumo próprio."},
+  "1902":{d:"Retorno de mercadoria remetida para industrialização por conta e ordem do adquirente", g:"outras", c:"nao", obs:"Retorno de mercadoria enviada para industrialização por terceiros — sem tributação própria nesta etapa."},
+  "2353":{d:"Aquisição de serviço de transporte por estabelecimento comercial — outro estado", g:"servico", c:"sim", obs:"Frete interestadual sobre compra (CIF) dá direito a crédito quando vinculado a mercadoria tributada."},
+  "2551":{d:"Compra de bem para o ativo imobilizado — outro estado", g:"ativo_imobilizado", c:"sim", obs:"Crédito admitido pela alíquota interestadual, apropriado em 1/48 por mês via CIAP — não integralmente no mês da entrada."},
+  "2556":{d:"Compra de material para uso ou consumo — outro estado", g:"uso_consumo", c:"vedado", obs:"Direito ao crédito de uso e consumo segue prorrogado (LC 171/2019 e LC 210/2023, atualmente até 2033) — não deveria haver crédito aqui."},
+  "2910":{d:"Entrada de bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"nao", obs:"Normalmente sem destaque de ICMS; se o remetente destacou imposto, avaliar se cabe crédito conforme legislação da UF de origem — confirme com a nota fiscal."},
+  "5553":{d:"Devolução de compra de bem para o ativo imobilizado", g:"devolucao", c:"sim", obs:"Estorna o crédito de CIAP tomado sobre o bem devolvido ao fornecedor."},
+  "5556":{d:"Venda de material de uso ou consumo", g:"outras", c:"revisar", obs:"Verifique se esta saída deveria gerar débito normal de ICMS (é uma venda de bem/mercadoria, ainda que originalmente classificada como uso/consumo) ou se está corretamente amparada por não incidência específica."},
+  "5901":{d:"Remessa para industrialização por conta e ordem do adquirente", g:"outras", c:"nao", obs:"Remessa para industrialização por terceiros — sem débito próprio nesta etapa; o débito ocorre na saída final do produto industrializado."},
+  "5909":{d:"Retorno de bem remetido por conta de contrato de comodato", g:"outras", c:"nao", obs:"Retorno de bem cedido em comodato — operação sem tributação de ICMS."}
 };
 
 var TRANSFER_CODES_OUT = ["5151","5152","5408","5409","6151","6152","6408","6409"];
@@ -615,23 +629,26 @@ var STORAGE_KEY = "icms_apuracao_megag_v1";
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 function defaultState(){
-  var filMatriz = "matriz";
   return {
-    filiais: [
-      {id: filMatriz, nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"}
-    ],
-    periodos: [
-      {id:"2026-08", label:"Agosto/2026"}
-    ],
-    selFilial: filMatriz,
-    selPeriodo: "2026-08",
+    filiais: [],
+    periodos: [],
+    selFilial: null,
+    selPeriodo: null,
     registros: {}
   };
 }
 
-function seedMatrizAgosto(state){
-  var key = "matriz|2026-08";
-  state.registros[key] = {
+/* Dados enviados pelo usuário, pré-carregados na primeira visita e mesclados
+   em cima do que já estiver salvo no navegador (nunca sobrescreve edições). */
+var SEED_FILIAIS = [
+  {id:"matriz", nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"},
+  {id:"filial_0002", nome:"Filial 0002", uf:"", cnpj:"19.043.440/0002-35", ie:"720035126118"}
+];
+var SEED_PERIODOS = [
+  {id:"2026-08", label:"Agosto/2026"}
+];
+var SEED_REGISTROS = {
+  "matriz|2026-08": {
     entradas: [
       {cfop:"1102", contabil:804265.60, base:505562.49, imposto:78404.78, isenta:32612.08, outras:266091.04},
       {cfop:"1152", contabil:1906882.47, base:0, imposto:0, isenta:0, outras:1906882.47},
@@ -666,17 +683,96 @@ function seedMatrizAgosto(state){
       {cfop:"5949", contabil:143.25, base:63.68, imposto:11.06, isenta:0, outras:79.57},
       {cfop:"6202", contabil:51277.38, base:51277.38, imposto:6153.29, isenta:0, outras:0}
     ]
-  };
+  },
+  "filial_0002|2026-08": {
+    entradas: [
+      {cfop:"1102", contabil:38971041.66, base:24577940.29, imposto:4107679.03, isenta:777296.67, outras:13593325.74},
+      {cfop:"1124", contabil:12495.60, base:0, imposto:0, isenta:12495.60, outras:0},
+      {cfop:"1152", contabil:464900.78, base:0, imposto:0, isenta:0, outras:464900.78},
+      {cfop:"1202", contabil:1505961.79, base:992095.43, imposto:169056.94, isenta:49386.37, outras:464479.99},
+      {cfop:"1253", contabil:233711.95, base:0, imposto:0, isenta:0, outras:233711.95},
+      {cfop:"1303", contabil:4464.58, base:0, imposto:0, isenta:0, outras:4464.58},
+      {cfop:"1353", contabil:2393543.73, base:638083.88, imposto:76569.96, isenta:0, outras:1755459.85},
+      {cfop:"1403", contabil:12997028.01, base:0, imposto:0, isenta:0, outras:11907998.38},
+      {cfop:"1409", contabil:74086.20, base:0, imposto:0, isenta:0, outras:74086.20},
+      {cfop:"1411", contabil:187298.90, base:0, imposto:0, isenta:0, outras:187298.90},
+      {cfop:"1551", contabil:9337.13, base:0, imposto:0, isenta:0, outras:7414.64},
+      {cfop:"1556", contabil:581343.28, base:0, imposto:0, isenta:0, outras:580479.80},
+      {cfop:"1653", contabil:581131.96, base:0, imposto:0, isenta:0, outras:581131.96},
+      {cfop:"1902", contabil:130665.29, base:0, imposto:0, isenta:0, outras:130665.29},
+      {cfop:"1910", contabil:291882.28, base:139573.97, imposto:24357.22, isenta:3379.50, outras:148291.49},
+      {cfop:"1920", contabil:34304.00, base:0, imposto:0, isenta:0, outras:34304.00},
+      {cfop:"1933", contabil:1359820.53, base:0, imposto:0, isenta:0, outras:1359820.53},
+      {cfop:"1949", contabil:5054064.90, base:11915.12, imposto:2144.72, isenta:50000.00, outras:4992149.78},
+      {cfop:"2102", contabil:58166904.52, base:55799730.75, imposto:6515221.37, isenta:78492.00, outras:2282778.86},
+      {cfop:"2152", contabil:15674.30, base:15284.20, imposto:1735.67, isenta:390.10, outras:0},
+      {cfop:"2202", contabil:251968.07, base:235410.42, imposto:27042.77, isenta:782.22, outras:15775.43},
+      {cfop:"2353", contabil:960197.44, base:571362.37, imposto:68563.21, isenta:0, outras:388835.07},
+      {cfop:"2403", contabil:2201358.29, base:0, imposto:0, isenta:0, outras:1967314.69},
+      {cfop:"2409", contabil:107031.89, base:0, imposto:0, isenta:0, outras:95598.36},
+      {cfop:"2411", contabil:11526.96, base:0, imposto:0, isenta:0, outras:9537.39},
+      {cfop:"2551", contabil:6954.55, base:0, imposto:0, isenta:0, outras:6954.55},
+      {cfop:"2556", contabil:87294.40, base:2287.00, imposto:91.48, isenta:0, outras:84881.06},
+      {cfop:"2910", contabil:205317.15, base:156316.89, imposto:18743.34, isenta:0, outras:48632.58},
+      {cfop:"2920", contabil:121270.00, base:0, imposto:0, isenta:0, outras:121270.00},
+      {cfop:"2933", contabil:158912.03, base:0, imposto:0, isenta:0, outras:158912.03},
+      {cfop:"2949", contabil:370899.88, base:0, imposto:0, isenta:0, outras:370746.80}
+    ],
+    saidas: [
+      {cfop:"5102", contabil:93535607.46, base:64253643.86, imposto:11130483.30, isenta:1166512.16, outras:28235210.77},
+      {cfop:"5152", contabil:17429250.93, base:0, imposto:0, isenta:0, outras:17429250.93},
+      {cfop:"5202", contabil:696871.15, base:503754.03, imposto:82469.21, isenta:24083.26, outras:169033.86},
+      {cfop:"5405", contabil:14864847.28, base:0, imposto:0, isenta:0, outras:14864847.28},
+      {cfop:"5409", contabil:5694797.65, base:0, imposto:0, isenta:0, outras:5694797.65},
+      {cfop:"5411", contabil:40732.03, base:0, imposto:0, isenta:0, outras:37351.78},
+      {cfop:"5553", contabil:2398.82, base:2398.82, imposto:287.86, isenta:0, outras:0},
+      {cfop:"5556", contabil:47700.00, base:0, imposto:0, isenta:0, outras:47700.00},
+      {cfop:"5901", contabil:130665.29, base:0, imposto:0, isenta:0, outras:130665.29},
+      {cfop:"5909", contabil:980500.00, base:0, imposto:0, isenta:0, outras:980500.00},
+      {cfop:"5910", contabil:14335.25, base:4314.07, imposto:754.72, isenta:153.59, outras:9867.59},
+      {cfop:"5915", contabil:36272.50, base:0, imposto:0, isenta:31170.00, outras:5102.50},
+      {cfop:"5921", contabil:49358.00, base:0, imposto:0, isenta:49358.00, outras:0},
+      {cfop:"5949", contabil:221782.38, base:97223.90, imposto:15058.50, isenta:1621.98, outras:122936.50},
+      {cfop:"6102", contabil:10516183.11, base:10159615.58, imposto:1203854.97, isenta:21928.66, outras:334638.87},
+      {cfop:"6152", contabil:939309.37, base:920010.11, imposto:104906.47, isenta:19299.26, outras:0},
+      {cfop:"6202", contabil:633539.46, base:630432.67, imposto:74369.38, isenta:0, outras:3006.29},
+      {cfop:"6403", contabil:522300.65, base:424925.08, imposto:50987.65, isenta:0, outras:0},
+      {cfop:"6409", contabil:5328482.04, base:0, imposto:0, isenta:0, outras:4741783.63},
+      {cfop:"6411", contabil:34686.39, base:0, imposto:0, isenta:0, outras:33429.03},
+      {cfop:"6910", contabil:0.30, base:0, imposto:0, isenta:0.30, outras:0},
+      {cfop:"6949", contabil:14325.40, base:12251.53, imposto:1439.54, isenta:0, outras:1996.45}
+    ]
+  }
+};
+
+function mergeSeeds(state){
+  SEED_FILIAIS.forEach(function(f){
+    if(!state.filiais.some(function(x){return x.id===f.id;})){
+      state.filiais.push(Object.assign({}, f));
+    }
+  });
+  SEED_PERIODOS.forEach(function(p){
+    if(!state.periodos.some(function(x){return x.id===p.id;})){
+      state.periodos.push(Object.assign({}, p));
+    }
+  });
+  Object.keys(SEED_REGISTROS).forEach(function(key){
+    if(!state.registros[key]){
+      state.registros[key] = JSON.parse(JSON.stringify(SEED_REGISTROS[key]));
+    }
+  });
+  if(!state.selFilial && state.filiais.length) state.selFilial = state.filiais[0].id;
+  if(!state.selPeriodo && state.periodos.length) state.selPeriodo = state.periodos[0].id;
 }
 
 var state = null;
 function loadState(){
   try{
     var raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){ state = JSON.parse(raw); return; }
+    if(raw){ state = JSON.parse(raw); mergeSeeds(state); saveState(); return; }
   }catch(e){}
   state = defaultState();
-  seedMatrizAgosto(state);
+  mergeSeeds(state);
   saveState();
 }
 function saveState(){
