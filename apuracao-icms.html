@@ -1,0 +1,1296 @@
+<title>Apuração ICMS — MegaG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============ tokens ============ */
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --surface-2:#eef1f5;
+  --surface-3:#e4e8ee;
+  --border:#d7dce3;
+  --border-strong:#b9c1cc;
+  --text:#1a2130;
+  --text-muted:#5b6472;
+  --text-faint:#8891a0;
+  --accent:#2e4c6d;
+  --accent-strong:#1e3550;
+  --accent-soft:#e4ebf3;
+  --accent-soft-border:#c4d3e4;
+  --ok:#1e8e5a;
+  --ok-soft:#e2f5ea;
+  --ok-soft-border:#b7e3c9;
+  --warn:#a5680d;
+  --warn-soft:#fbf0dc;
+  --warn-soft-border:#eecd8e;
+  --bad:#b3261e;
+  --bad-soft:#fbe6e4;
+  --bad-soft-border:#f0b8b2;
+  --shadow: 0 1px 2px rgba(20,26,38,.04), 0 4px 14px rgba(20,26,38,.06);
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161d;
+    --surface:#181d26;
+    --surface-2:#1f2530;
+    --surface-3:#272e3b;
+    --border:#333c4a;
+    --border-strong:#485363;
+    --text:#e8ecf2;
+    --text-muted:#a3adbd;
+    --text-faint:#707c8e;
+    --accent:#7ea6d4;
+    --accent-strong:#a9c6e8;
+    --accent-soft:#22314a;
+    --accent-soft-border:#33507a;
+    --ok:#5cc994;
+    --ok-soft:#153826;
+    --ok-soft-border:#215c3e;
+    --warn:#e0ac4c;
+    --warn-soft:#3a2e12;
+    --warn-soft-border:#634c1c;
+    --bad:#ea8c85;
+    --bad-soft:#3d1e1c;
+    --bad-soft-border:#69302b;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161d;
+  --surface:#181d26;
+  --surface-2:#1f2530;
+  --surface-3:#272e3b;
+  --border:#333c4a;
+  --border-strong:#485363;
+  --text:#e8ecf2;
+  --text-muted:#a3adbd;
+  --text-faint:#707c8e;
+  --accent:#7ea6d4;
+  --accent-strong:#a9c6e8;
+  --accent-soft:#22314a;
+  --accent-soft-border:#33507a;
+  --ok:#5cc994;
+  --ok-soft:#153826;
+  --ok-soft-border:#215c3e;
+  --warn:#e0ac4c;
+  --warn-soft:#3a2e12;
+  --warn-soft-border:#634c1c;
+  --bad:#ea8c85;
+  --bad-soft:#3d1e1c;
+  --bad-soft-border:#69302b;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.mono, .num, input.num, td.num, .cfop-code{
+  font-family:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+h1,h2,h3,h4{
+  font-family:"IBM Plex Sans", sans-serif;
+  font-weight:600;
+  text-wrap:balance;
+  margin:0;
+  color:var(--text);
+}
+a{color:var(--accent);}
+button{font-family:inherit;}
+::selection{background:var(--accent-soft-border); color:var(--text);}
+
+/* ============ shell ============ */
+.app{max-width:1400px;margin:0 auto;padding:0 20px 64px;}
+
+.topbar{
+  position:sticky; top:0; z-index:30;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  padding:14px 0 0;
+  margin-bottom:18px;
+}
+.topbar-inner{max-width:1400px;margin:0 auto;padding:0 20px;}
+.brand{
+  display:flex; align-items:baseline; gap:10px; margin-bottom:12px;
+}
+.brand .mark{
+  width:30px;height:30px;border-radius:7px;
+  background:linear-gradient(155deg, var(--accent), var(--accent-strong));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff; font-weight:700; font-size:13px; font-family:"IBM Plex Mono",monospace;
+  flex:none;
+}
+.brand h1{font-size:18px; letter-spacing:.1px;}
+.brand .sub{color:var(--text-muted); font-size:12.5px;}
+
+.controlbar{
+  display:flex; flex-wrap:wrap; align-items:end; gap:14px;
+  padding:12px 0 14px;
+  border-bottom:1px solid var(--border);
+}
+.field{display:flex; flex-direction:column; gap:4px;}
+.field label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:600;}
+select, input[type=text], input[type=number], input[type=month]{
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--border-strong);
+  border-radius:7px;
+  padding:7px 10px;
+  font-size:13.5px;
+  min-height:34px;
+}
+select:focus, input:focus, button:focus-visible{
+  outline:2px solid var(--accent); outline-offset:1px;
+}
+.field.grow{flex:1; min-width:160px;}
+.spacer{flex:1;}
+
+.btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--border-strong);
+  border-radius:7px; padding:7px 12px; font-size:13px; font-weight:500;
+  cursor:pointer; min-height:34px; white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2);}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+.btn.primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}
+.btn.ghost{border-color:transparent; background:transparent;}
+.btn.ghost:hover{background:var(--surface-2);}
+.btn.danger{color:var(--bad);}
+.btn.sm{padding:4px 9px; min-height:28px; font-size:12px; border-radius:6px;}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+
+/* tabs */
+.tabs{display:flex; gap:2px; margin:16px 0 18px; border-bottom:1px solid var(--border); overflow-x:auto;}
+.tab{
+  padding:9px 14px; font-size:13px; font-weight:500; color:var(--text-muted);
+  cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;
+  user-select:none;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent); border-bottom-color:var(--accent); font-weight:600;}
+.tab .count{
+  display:inline-block; margin-left:6px; padding:0 6px; border-radius:10px;
+  background:var(--surface-3); color:var(--text-muted); font-size:11px; font-weight:600;
+}
+.tab .count.warn{background:var(--warn-soft); color:var(--warn);}
+.tab .count.bad{background:var(--bad-soft); color:var(--bad);}
+
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* cards */
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:16px 18px; margin-bottom:16px;
+}
+.card-head{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
+.card-head h2{font-size:14.5px;}
+.card-head .desc{color:var(--text-muted); font-size:12.5px;}
+.card-head .actions{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;}
+
+.grid-summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px;}
+.stat{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:12px 14px;
+}
+.stat .label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); font-weight:600; margin-bottom:6px;}
+.stat .value{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600; font-variant-numeric:tabular-nums;}
+.stat .value.ok{color:var(--ok);}
+.stat .value.bad{color:var(--bad);}
+.stat .hint{font-size:11.5px; color:var(--text-muted); margin-top:4px;}
+
+/* tables */
+.table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:9px;}
+table{border-collapse:collapse; width:100%; min-width:760px;}
+thead th{
+  position:sticky; top:0;
+  background:var(--surface-2); color:var(--text-muted);
+  font-size:11px; text-transform:uppercase; letter-spacing:.04em; font-weight:600;
+  text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap;
+}
+tbody td{padding:6px 10px; border-bottom:1px solid var(--border); vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td.num, th.num{text-align:right;}
+tfoot td{padding:9px 10px; font-weight:600; background:var(--surface-2); border-top:1px solid var(--border-strong);}
+.subtotal-row td{background:var(--accent-soft); font-weight:600;}
+
+table input{width:100%; min-width:90px; border:1px solid transparent; background:transparent; padding:5px 6px; border-radius:5px; font-size:13px;}
+table input:hover{border-color:var(--border);}
+table input:focus{border-color:var(--accent); background:var(--surface); outline:none;}
+table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
+.cfop-desc{font-size:11.5px; color:var(--text-muted); max-width:260px; white-space:normal;}
+.row-del{color:var(--text-faint); background:none; border:none; cursor:pointer; padding:4px; border-radius:5px; font-size:14px; line-height:1;}
+.row-del:hover{color:var(--bad); background:var(--bad-soft);}
+
+/* badges */
+.badge{
+  display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px;
+  font-size:11.5px; font-weight:600; white-space:nowrap;
+}
+.badge.ok{background:var(--ok-soft); color:var(--ok); border:1px solid var(--ok-soft-border);}
+.badge.warn{background:var(--warn-soft); color:var(--warn); border:1px solid var(--warn-soft-border);}
+.badge.bad{background:var(--bad-soft); color:var(--bad); border:1px solid var(--bad-soft-border);}
+.badge.neutral{background:var(--surface-3); color:var(--text-muted); border:1px solid var(--border);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none;}
+
+/* filiais list */
+.filiais-list{display:flex; flex-direction:column; gap:8px;}
+.filial-row{
+  display:flex; align-items:center; gap:10px; padding:8px 10px;
+  border:1px solid var(--border); border-radius:8px; background:var(--surface-2);
+  flex-wrap:wrap;
+}
+.filial-row input{flex:1; min-width:110px;}
+.filial-row .tag{font-size:10.5px; padding:2px 7px; border-radius:5px; background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-soft-border); font-weight:700; text-transform:uppercase;}
+
+/* reconciliation */
+.recon-grand{
+  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+  padding:16px 18px; border-radius:10px; margin-bottom:14px;
+  border:1px solid var(--border);
+}
+.recon-grand.ok{background:var(--ok-soft); border-color:var(--ok-soft-border);}
+.recon-grand.bad{background:var(--bad-soft); border-color:var(--bad-soft-border);}
+.recon-grand .big{font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:700;}
+.recon-grand .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); font-weight:600;}
+
+/* suggestions */
+.sugg-list{display:flex; flex-direction:column; gap:10px;}
+.sugg-item{
+  display:flex; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:9px; background:var(--surface-2);
+}
+.sugg-item .icon{
+  flex:none; width:26px;height:26px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-soft); color:var(--accent); font-size:13px; font-weight:700;
+}
+.sugg-item h4{font-size:13.5px; margin-bottom:3px;}
+.sugg-item p{margin:0; color:var(--text-muted); font-size:12.8px; line-height:1.55;}
+.sugg-item .base{font-size:11px; color:var(--text-faint); margin-top:5px;}
+
+.finding-item{border-left:3px solid var(--border-strong); padding:8px 12px; margin-bottom:8px; border-radius:0 7px 7px 0; background:var(--surface-2); font-size:12.8px;}
+.finding-item.warn{border-color:var(--warn); background:var(--warn-soft);}
+.finding-item.bad{border-color:var(--bad); background:var(--bad-soft);}
+.finding-item b{font-family:"IBM Plex Mono",monospace;}
+
+.helptext{font-size:12px; color:var(--text-muted); margin-top:6px;}
+.divider{height:1px; background:var(--border); margin:14px 0;}
+.footer-note{color:var(--text-faint); font-size:11.5px; margin-top:26px; line-height:1.6; padding-top:14px; border-top:1px solid var(--border);}
+
+@media (max-width:640px){
+  table{min-width:640px;}
+}
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="mark">ICMS</div>
+        <div>
+          <h1>Apuração de ICMS — Controle &amp; Conferência</h1>
+          <div class="sub" id="companyLine">Nova Mega G Atacadista de Alimentos S/A</div>
+        </div>
+      </div>
+      <div class="controlbar">
+        <div class="field">
+          <label for="selFilial">Filial</label>
+          <select id="selFilial"></select>
+        </div>
+        <div class="field">
+          <label for="selPeriodo">Período</label>
+          <select id="selPeriodo"></select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn sm" id="btnNovoPeriodo">+ Período</button>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn sm" id="btnGerenciarFiliais">Gerenciar filiais</button>
+        </div>
+        <div class="spacer"></div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div style="display:flex; gap:8px;">
+            <button class="btn sm" id="btnExportJson">Exportar backup</button>
+            <button class="btn sm" id="btnImportJson">Importar backup</button>
+            <input type="file" id="fileImport" accept="application/json" style="display:none;">
+          </div>
+        </div>
+      </div>
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="lancamentos">Lançamentos</div>
+        <div class="tab" data-tab="classificacao">Classificação de CFOP <span class="count" id="cntClassif"></span></div>
+        <div class="tab" data-tab="reconciliacao">Reconciliação entre filiais <span class="count" id="cntRecon"></span></div>
+        <div class="tab" data-tab="resumo">Resumo da apuração</div>
+        <div class="tab" data-tab="sugestoes">Parecer do analista</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILIAIS MODAL (inline panel, not a real modal to keep it simple) -->
+  <div class="card" id="painelFiliais" style="display:none;">
+    <div class="card-head">
+      <h2>Filiais cadastradas</h2>
+      <div class="desc">Cadastre a Matriz e cada filial para poder cruzar as transferências entre elas.</div>
+      <div class="actions"><button class="btn sm primary" id="btnAddFilial">+ Nova filial</button></div>
+    </div>
+    <div class="filiais-list" id="filiaisList"></div>
+    <div class="helptext">O campo UF é usado apenas como referência para as alíquotas interestaduais; não altera os lançamentos já digitados.</div>
+  </div>
+
+  <!-- LANÇAMENTOS -->
+  <div class="panel active" id="panel-lancamentos">
+    <div class="card">
+      <div class="card-head">
+        <h2>Entradas — Valores Fiscais</h2>
+        <div class="desc">Livro de Apuração do ICMS, bloco de entrada.</div>
+        <div class="actions">
+          <button class="btn sm" id="btnAddEntrada">+ Linha</button>
+          <button class="btn sm" id="btnCsvEntrada">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tblEntradas">
+          <thead>
+            <tr>
+              <th style="width:70px">CFOP</th>
+              <th>Descrição</th>
+              <th class="num">Valores Contábeis</th>
+              <th class="num">Base de Cálculo</th>
+              <th class="num">Imposto Creditado</th>
+              <th class="num">Isentas / Não Trib.</th>
+              <th class="num">Outras</th>
+              <th style="width:26px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Saídas — Valores Fiscais</h2>
+        <div class="desc">Livro de Apuração do ICMS, bloco de saída.</div>
+        <div class="actions">
+          <button class="btn sm" id="btnAddSaida">+ Linha</button>
+          <button class="btn sm" id="btnCsvSaida">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tblSaidas">
+          <thead>
+            <tr>
+              <th style="width:70px">CFOP</th>
+              <th>Descrição</th>
+              <th class="num">Valores Contábeis</th>
+              <th class="num">Base de Cálculo</th>
+              <th class="num">Imposto Debitado</th>
+              <th class="num">Isentas / Não Trib.</th>
+              <th class="num">Outras</th>
+              <th style="width:26px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASSIFICAÇÃO -->
+  <div class="panel" id="panel-classificacao">
+    <div class="card">
+      <div class="card-head">
+        <h2>Classificação de CFOP — filial e período selecionados</h2>
+        <div class="desc">Cada lançamento é confrontado com o comportamento esperado do CFOP (direito a crédito, ICMS-ST, transferência, uso e consumo, etc.).</div>
+      </div>
+      <div class="table-wrap">
+        <table id="tblClassif">
+          <thead>
+            <tr>
+              <th>Bloco</th>
+              <th style="width:64px">CFOP</th>
+              <th>Descrição / grupo</th>
+              <th class="num">Valor contábil</th>
+              <th class="num">Base</th>
+              <th class="num">Imposto</th>
+              <th class="num">Alíquota efet.</th>
+              <th style="width:150px">Situação</th>
+              <th>Observação técnica</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECONCILIAÇÃO -->
+  <div class="panel" id="panel-reconciliacao">
+    <div class="card">
+      <div class="card-head">
+        <h2>Transferências — Matriz × Filiais</h2>
+        <div class="desc">Soma, no período selecionado, todas as saídas classificadas como transferência (CFOP 5.151/5.152/5.409/5.408/6.xxx) contra todas as entradas de transferência (1.151/1.152/1.409/1.408/2.xxx) de <b>todas as filiais cadastradas</b>. Em uma transferência, cada saída deve ter uma entrada correspondente — o total global deve bater.</div>
+      </div>
+      <div class="recon-grand" id="reconGrand"></div>
+      <div class="table-wrap">
+        <table id="tblReconFiliais">
+          <thead>
+            <tr>
+              <th>Filial</th>
+              <th class="num">Saídas de transferência (valor contábil)</th>
+              <th class="num">Entradas de transferência (valor contábil)</th>
+              <th class="num">Saldo líquido</th>
+              <th>Leitura</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="helptext">Saldo líquido positivo = a filial remeteu mais do que recebeu em transferência (esperado para a Matriz/CD). Saldo negativo = recebeu mais do que remeteu (esperado para filiais de venda). O que importa é o <b>total geral</b> acima fechar em zero.</div>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="panel" id="panel-resumo">
+    <div class="card">
+      <div class="card-head">
+        <h2>Resumo — filial e período selecionados</h2>
+      </div>
+      <div class="grid-summary" id="resumoFilial"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Consolidado — todas as filiais no período selecionado</h2>
+      </div>
+      <div class="grid-summary" id="resumoConsolidado" style="margin-bottom:14px;"></div>
+      <div class="table-wrap">
+        <table id="tblResumoPorFilial">
+          <thead>
+            <tr>
+              <th>Filial</th>
+              <th class="num">Débito ICMS</th>
+              <th class="num">Crédito ICMS</th>
+              <th class="num">Saldo do período</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUGESTÕES -->
+  <div class="panel" id="panel-sugestoes">
+    <div class="card">
+      <div class="card-head">
+        <h2>Pontos de atenção identificados agora</h2>
+        <div class="desc">Gerados automaticamente a partir dos lançamentos da filial e período selecionados.</div>
+      </div>
+      <div id="findingsAuto"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Parecer do analista fiscal sênior</h2>
+        <div class="desc">Recomendações estruturais para o processo de apuração do ICMS do grupo.</div>
+      </div>
+      <div class="sugg-list" id="suggList"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Ferramenta de apoio à conferência interna. As classificações de CFOP seguem a tabela nacional (Ajuste SINIEF 07/01) e a
+    Lei Complementar 204/2023 (não incidência de ICMS na transferência entre estabelecimentos do mesmo titular).
+    Alíquotas e regras variam por estado e por NCM — confirme sempre com a legislação vigente na UF da filial e com o
+    regulamento interno antes de usar os apontamentos como base para retificação de obrigações acessórias.
+    Os dados ficam salvos apenas neste navegador (localStorage); use "Exportar backup" para guardar uma cópia.
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== CFOP knowledge base ===================== */
+// credito: 'sim' | 'nao' | 'st' | 'transferencia' | 'vedado' | 'revisar'
+var CFOP_DB = {
+  // ---- Entradas mesmo estado (1.xxx) ----
+  "1102":{d:"Compra para comercialização", g:"compra", c:"sim", obs:"Crédito integral pela alíquota da operação, exceto restrições específicas de NCM."},
+  "1151":{d:"Transferência para industrialização", g:"transferencia", c:"transferencia", obs:"Desde a LC 204/2023 não há incidência de ICMS na transferência entre estabelecimentos do mesmo titular; o crédito da origem deve ser transferido, não recriado."},
+  "1152":{d:"Transferência para comercialização", g:"transferencia", c:"transferencia", obs:"Idem — conferir se o crédito de origem foi transferido junto (não deve haver novo destaque de ICMS)."},
+  "1202":{d:"Devolução de venda de mercadoria adquirida ou recebida de terceiros", g:"devolucao", c:"sim", obs:"Estorna o débito da venda original; a alíquota deve refletir a operação de venda devolvida."},
+  "1253":{d:"Compra de energia elétrica por estabelecimento comercial", g:"servico", c:"sim", obs:"Crédito integral para estabelecimento comercial; confirmar se a concessionária destacou o imposto corretamente."},
+  "1303":{d:"Aquisição de serviço de comunicação por estabelecimento comercial", g:"servico", c:"vedado", obs:"Em regra só gera crédito para prestadores de comunicação/telecom; comércio em geral não aproveita, salvo previsão estadual específica."},
+  "1353":{d:"Aquisição de serviço de transporte por estabelecimento comercial", g:"servico", c:"sim", obs:"Frete sobre compra (CIF) dá direito a crédito quando vinculado a mercadoria tributada."},
+  "1401":{d:"Compra para industrialização em operação com ICMS-ST", g:"st", c:"st", obs:"Imposto já retido na origem; não gera novo crédito além do eventual ICMS próprio destacado."},
+  "1403":{d:"Compra para comercialização em operação com ICMS-ST", g:"st", c:"st", obs:"Mercadoria com substituição tributária — sem crédito adicional na entrada, o ICMS-ST fica fora da apuração normal."},
+  "1408":{d:"Transferência para industrialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST."},
+  "1409":{d:"Transferência para comercialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST — sem novo destaque de ICMS próprio."},
+  "1411":{d:"Devolução de venda em operação com ICMS-ST", g:"st", c:"st", obs:"Devolução de mercadoria com substituição tributária."},
+  "1556":{d:"Compra de material para uso ou consumo", g:"uso_consumo", c:"vedado", obs:"Direito ao crédito de uso e consumo segue prorrogado (LC 171/2019 e LC 210/2023, atualmente até 2033) — correto não haver crédito."},
+  "1910":{d:"Entrada de bonificação, doação ou brinde", g:"bonificacao", c:"nao", obs:"Normalmente sem destaque de ICMS; se o remetente destacou imposto, avaliar se cabe crédito conforme legislação da UF de origem."},
+  "1911":{d:"Entrada de amostra grátis", g:"bonificacao", c:"nao", obs:"Amostra grátis sem valor comercial, sem crédito de ICMS."},
+  "1917":{d:"Entrada de mercadoria recebida em consignação", g:"outras", c:"nao", obs:"Crédito diferido para o momento da efetiva compra (quando a mercadoria consignada for vendida)."},
+  "1920":{d:"Entrada de vasilhame ou sacaria", g:"outras", c:"nao", obs:"Operação de retorno de embalagem, sem tributação."},
+  "1922":{d:"Lançamento de simples faturamento — compra para recebimento futuro", g:"outras", c:"nao", obs:"Não corresponde a entrada física; o crédito nasce apenas no efetivo recebimento (CFOP 1.102/1.403 etc.)."},
+  "1933":{d:"Aquisição de serviço tributado pelo ISSQN", g:"servico", c:"nao", obs:"Fora do campo de incidência do ICMS."},
+  "1949":{d:"Outra entrada de mercadoria ou prestação de serviço não especificado", g:"generico", c:"revisar", obs:"CFOP genérico. Volumes relevantes aqui indicam lançamentos que deveriam estar em código específico — reclassificar."},
+
+  // ---- Entradas outro estado (2.xxx) ----
+  "2102":{d:"Compra para comercialização — outro estado", g:"compra", c:"sim", obs:"Crédito pela alíquota interestadual (7% ou 12% conforme UF de origem/destino)."},
+  "2151":{d:"Transferência para industrialização — outro estado", g:"transferencia", c:"transferencia", obs:"Não incidência de ICMS (LC 204/2023); crédito de origem deve ser transferido ao destino conforme percentuais fixados por Convênio/UF."},
+  "2152":{d:"Transferência para comercialização — outro estado", g:"transferencia", c:"transferencia", obs:"Idem — ponto crítico de reconciliação com a saída 6.152/5.152 da filial remetente."},
+  "2202":{d:"Devolução de venda — outro estado", g:"devolucao", c:"sim", obs:"Estorna o débito da venda interestadual original."},
+  "2401":{d:"Compra para industrialização em operação com ICMS-ST — outro estado", g:"st", c:"st", obs:"Sem crédito adicional; ICMS-ST recolhido pelo substituto de origem."},
+  "2403":{d:"Compra para comercialização em operação com ICMS-ST — outro estado", g:"st", c:"st", obs:"Sem crédito adicional; ICMS-ST recolhido pelo substituto de origem."},
+  "2408":{d:"Transferência para industrialização em operação com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria com ST já retido."},
+  "2409":{d:"Transferência para comercialização em operação com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria com ST já retido."},
+  "2411":{d:"Devolução de venda em operação com ICMS-ST — outro estado", g:"st", c:"st", obs:"Devolução de mercadoria com substituição tributária."},
+  "2653":{d:"Compra de combustível/lubrificante por consumidor final — outro estado", g:"uso_consumo", c:"vedado", obs:"Combustíveis em regra são monofásicos/ST; sem crédito para consumo próprio."},
+  "2920":{d:"Entrada de vasilhame ou sacaria — outro estado", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
+  "2933":{d:"Aquisição de serviço tributado pelo ISSQN — outro estado", g:"servico", c:"nao", obs:"Fora do campo de incidência do ICMS."},
+  "2949":{d:"Outra entrada não especificada — outro estado", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."},
+
+  // ---- Saídas mesmo estado (5.xxx) ----
+  "5102":{d:"Venda de mercadoria adquirida ou recebida de terceiros", g:"venda", c:"sim", obs:"Débito normal pela alíquota do produto/NCM (atenção a reduções de base para itens de cesta básica)."},
+  "5151":{d:"Transferência para industrialização", g:"transferencia", c:"transferencia", obs:"Sem incidência de ICMS (LC 204/2023) — deve casar com a entrada 1.151/2.151 da filial destinatária."},
+  "5152":{d:"Transferência para comercialização", g:"transferencia", c:"transferencia", obs:"Sem incidência de ICMS — deve casar, em valor contábil, com a entrada 1.152/2.152 da filial destinatária."},
+  "5202":{d:"Devolução de compra para comercialização", g:"devolucao", c:"sim", obs:"Estorna o crédito tomado na compra original."},
+  "5401":{d:"Venda de produção do estabelecimento em operação com ICMS-ST (substituto)", g:"st", c:"st_substituto", obs:"Gera débito próprio e retenção do ICMS-ST devido pelo destinatário."},
+  "5403":{d:"Venda de mercadoria adquirida/recebida de terceiros em operação com ICMS-ST (substituto)", g:"st", c:"st_substituto", obs:"Gera débito próprio e retenção do ICMS-ST."},
+  "5405":{d:"Venda de mercadoria adquirida/recebida de terceiros em operação com ICMS-ST (substituído)", g:"st", c:"st", obs:"Sem débito próprio adicional — o imposto já foi retido antes; conferir se o ICMS-ST está sendo apurado em livro específico."},
+  "5408":{d:"Transferência para industrialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST."},
+  "5409":{d:"Transferência para comercialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria com ST — deve casar com a entrada 1.409/2.409 da filial destinatária."},
+  "5411":{d:"Devolução de compra em operação com ICMS-ST", g:"st", c:"st", obs:"Devolução ao fornecedor de mercadoria com substituição tributária."},
+  "5910":{d:"Remessa em bonificação, doação ou brinde", g:"bonificacao", c:"nao", obs:"Em regra sem débito; várias UFs exigem estorno proporcional do crédito da compra vinculada à mercadoria doada — verificar."},
+  "5911":{d:"Remessa de amostra grátis", g:"bonificacao", c:"nao", obs:"Sem valor comercial, sem débito."},
+  "5915":{d:"Remessa para conserto ou reparo", g:"outras", c:"nao", obs:"Operação com suspensão do ICMS; controlar o retorno para evitar mercadoria \"perdida\" na apuração."},
+  "5920":{d:"Remessa de vasilhame ou sacaria", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
+  "5921":{d:"Remessa de vasilhame ou sacaria", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
+  "5949":{d:"Outra saída não especificada", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."},
+
+  // ---- Saídas outro estado (6.xxx) ----
+  "6102":{d:"Venda de mercadoria adquirida ou recebida de terceiros — outro estado", g:"venda", c:"sim", obs:"Débito pela alíquota interestadual (7% ou 12%); FCP/DIFAL de consumidor final tratado à parte."},
+  "6151":{d:"Transferência para industrialização — outro estado", g:"transferencia", c:"transferencia", obs:"Sem incidência de ICMS — deve casar com a entrada 1.151/2.151 da filial destinatária."},
+  "6152":{d:"Transferência para comercialização — outro estado", g:"transferencia", c:"transferencia", obs:"Sem incidência de ICMS — deve casar com a entrada 1.152/2.152 da filial destinatária."},
+  "6202":{d:"Devolução de compra para comercialização — outro estado", g:"devolucao", c:"sim", obs:"Estorna o crédito tomado na compra interestadual original."},
+  "6401":{d:"Venda de produção em operação com ICMS-ST (substituto) — outro estado", g:"st", c:"st_substituto", obs:"Gera débito próprio e retenção do ICMS-ST para a UF de destino."},
+  "6403":{d:"Venda de mercadoria adquirida/recebida de terceiros com ICMS-ST (substituto) — outro estado", g:"st", c:"st_substituto", obs:"Gera débito próprio e retenção do ICMS-ST para a UF de destino."},
+  "6404":{d:"Venda de mercadoria adquirida/recebida de terceiros com ICMS-ST (substituído) — outro estado", g:"st", c:"st", obs:"Sem débito próprio adicional — ST já retido anteriormente."},
+  "6408":{d:"Transferência para industrialização com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST."},
+  "6409":{d:"Transferência para comercialização com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria com ST — deve casar com a entrada 1.409/2.409 da filial destinatária."},
+  "6411":{d:"Devolução de compra com ICMS-ST — outro estado", g:"st", c:"st", obs:"Devolução ao fornecedor de mercadoria com substituição tributária."},
+  "6910":{d:"Remessa em bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"nao", obs:"Verificar exigência de estorno proporcional de crédito conforme legislação da UF de origem."},
+  "6915":{d:"Remessa para conserto ou reparo — outro estado", g:"outras", c:"nao", obs:"Operação com suspensão do ICMS."},
+  "6920":{d:"Remessa de vasilhame ou sacaria — outro estado", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
+  "6949":{d:"Outra saída não especificada — outro estado", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."}
+};
+
+var TRANSFER_CODES_OUT = ["5151","5152","5408","5409","6151","6152","6408","6409"];
+var TRANSFER_CODES_IN  = ["1151","1152","1408","1409","2151","2152","2408","2409"];
+
+/* ===================== state ===================== */
+var STORAGE_KEY = "icms_apuracao_megag_v1";
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function defaultState(){
+  var filMatriz = "matriz";
+  return {
+    filiais: [
+      {id: filMatriz, nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"}
+    ],
+    periodos: [
+      {id:"2026-08", label:"Agosto/2026"}
+    ],
+    selFilial: filMatriz,
+    selPeriodo: "2026-08",
+    registros: {}
+  };
+}
+
+function seedMatrizAgosto(state){
+  var key = "matriz|2026-08";
+  state.registros[key] = {
+    entradas: [
+      {cfop:"1102", contabil:804265.60, base:505562.49, imposto:78404.78, isenta:32612.08, outras:266091.04},
+      {cfop:"1152", contabil:1906882.47, base:0, imposto:0, isenta:0, outras:1906882.47},
+      {cfop:"1202", contabil:6769.26, base:6165.87, imposto:1089.37, isenta:178.97, outras:424.42},
+      {cfop:"1253", contabil:20455.83, base:0, imposto:0, isenta:0, outras:20455.83},
+      {cfop:"1303", contabil:536.20, base:0, imposto:0, isenta:0, outras:536.20},
+      {cfop:"1353", contabil:3528.00, base:3528.00, imposto:423.36, isenta:0, outras:0},
+      {cfop:"1403", contabil:666853.05, base:0, imposto:0, isenta:0, outras:612726.27},
+      {cfop:"1409", contabil:198612.25, base:0, imposto:0, isenta:0, outras:198612.25},
+      {cfop:"1411", contabil:3293.02, base:0, imposto:0, isenta:0, outras:3293.02},
+      {cfop:"1556", contabil:86612.90, base:0, imposto:0, isenta:0, outras:86612.90},
+      {cfop:"1910", contabil:266.80, base:0, imposto:0, isenta:156.00, outras:110.80},
+      {cfop:"1933", contabil:646694.20, base:0, imposto:0, isenta:0, outras:646694.20},
+      {cfop:"1949", contabil:1082505.50, base:0, imposto:0, isenta:1570.00, outras:1080935.50},
+      {cfop:"2102", contabil:2680355.20, base:2680355.20, imposto:321642.64, isenta:0, outras:0},
+      {cfop:"2202", contabil:1632.64, base:634.93, imposto:114.29, isenta:0, outras:997.71},
+      {cfop:"2653", contabil:123461.26, base:0, imposto:0, isenta:0, outras:123461.26},
+      {cfop:"2920", contabil:1876.00, base:0, imposto:0, isenta:0, outras:1876.00},
+      {cfop:"2933", contabil:29471.65, base:0, imposto:0, isenta:0, outras:29471.65},
+      {cfop:"2949", contabil:8162.70, base:0, imposto:0, isenta:1570.00, outras:8162.70}
+    ],
+    saidas: [
+      {cfop:"5102", contabil:6769855.77, base:5833458.84, imposto:1021587.50, isenta:65192.56, outras:872686.49},
+      {cfop:"5152", contabil:144474.59, base:0, imposto:0, isenta:0, outras:144474.59},
+      {cfop:"5202", contabil:845.80, base:183.04, imposto:28.39, isenta:555.00, outras:107.76},
+      {cfop:"5405", contabil:1069132.23, base:0, imposto:0, isenta:0, outras:1069132.23},
+      {cfop:"5409", contabil:38514.24, base:0, imposto:0, isenta:0, outras:38514.24},
+      {cfop:"5411", contabil:115.20, base:0, imposto:0, isenta:0, outras:111.86},
+      {cfop:"5910", contabil:0.01, base:0, imposto:0, isenta:0.01, outras:0},
+      {cfop:"5915", contabil:1570.00, base:0, imposto:0, isenta:1570.00, outras:0},
+      {cfop:"5921", contabil:11527.50, base:0, imposto:0, isenta:11527.50, outras:0},
+      {cfop:"5949", contabil:143.25, base:63.68, imposto:11.06, isenta:0, outras:79.57},
+      {cfop:"6202", contabil:51277.38, base:51277.38, imposto:6153.29, isenta:0, outras:0}
+    ]
+  };
+}
+
+var state = null;
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ state = JSON.parse(raw); return; }
+  }catch(e){}
+  state = defaultState();
+  seedMatrizAgosto(state);
+  saveState();
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function regKey(filialId, periodoId){ return filialId+"|"+periodoId; }
+function currentReg(){
+  var key = regKey(state.selFilial, state.selPeriodo);
+  if(!state.registros[key]) state.registros[key] = {entradas:[], saidas:[]};
+  return state.registros[key];
+}
+function regFor(filialId, periodoId){
+  var key = regKey(filialId, periodoId);
+  return state.registros[key] || {entradas:[], saidas:[]};
+}
+
+/* ===================== helpers ===================== */
+function parseNumberBR(str){
+  if(typeof str === "number") return str;
+  if(!str) return 0;
+  str = String(str).trim();
+  if(str === "") return 0;
+  str = str.replace(/[^0-9,.\-]/g,"");
+  if(str.indexOf(",") > -1 && str.indexOf(".") > -1){
+    str = str.replace(/\./g,"").replace(",",".");
+  } else if(str.indexOf(",") > -1){
+    str = str.replace(",",".");
+  }
+  var n = parseFloat(str);
+  return isNaN(n) ? 0 : n;
+}
+function fmtBRL(n){
+  n = n || 0;
+  return n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtPct(n){
+  if(!isFinite(n)) return "—";
+  return n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2})+"%";
+}
+function escapeHtml(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function cfopInfo(code){
+  return CFOP_DB[code] || null;
+}
+function filialName(id){
+  var f = state.filiais.find(function(x){return x.id===id;});
+  return f ? f.nome : id;
+}
+function periodoLabel(id){
+  var p = state.periodos.find(function(x){return x.id===id;});
+  return p ? p.label : id;
+}
+
+/* ===================== rendering: control bar ===================== */
+function renderFilialSelect(){
+  var sel = document.getElementById("selFilial");
+  sel.innerHTML = "";
+  state.filiais.forEach(function(f){
+    var opt = document.createElement("option");
+    opt.value = f.id;
+    opt.textContent = f.nome + (f.uf ? " ("+f.uf+")" : "");
+    if(f.id === state.selFilial) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+function renderPeriodoSelect(){
+  var sel = document.getElementById("selPeriodo");
+  sel.innerHTML = "";
+  state.periodos.forEach(function(p){
+    var opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.label;
+    if(p.id === state.selPeriodo) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+function renderCompanyLine(){
+  var f = state.filiais.find(function(x){return x.id===state.selFilial;});
+  var el = document.getElementById("companyLine");
+  if(f){
+    el.textContent = "Nova Mega G Atacadista de Alimentos S/A · " + f.nome + (f.cnpj?" · CNPJ "+f.cnpj:"") + (f.ie?" · IE "+f.ie:"") + " · " + periodoLabel(state.selPeriodo);
+  }
+}
+
+/* ===================== rendering: filiais manager ===================== */
+function renderFiliaisPanel(){
+  var wrap = document.getElementById("filiaisList");
+  wrap.innerHTML = "";
+  state.filiais.forEach(function(f){
+    var row = document.createElement("div");
+    row.className = "filial-row";
+    row.innerHTML =
+      (f.id === state.filiais[0].id ? '<span class="tag">matriz</span>' : '<span class="tag" style="background:var(--surface-3);color:var(--text-muted);border-color:var(--border)">filial</span>') +
+      '<input type="text" data-f="'+f.id+'" data-k="nome" value="'+escapeHtml(f.nome)+'" placeholder="Nome da filial">' +
+      '<input type="text" data-f="'+f.id+'" data-k="uf" value="'+escapeHtml(f.uf||"")+'" placeholder="UF" style="max-width:56px">' +
+      '<input type="text" data-f="'+f.id+'" data-k="cnpj" value="'+escapeHtml(f.cnpj||"")+'" placeholder="CNPJ" style="max-width:160px">' +
+      '<input type="text" data-f="'+f.id+'" data-k="ie" value="'+escapeHtml(f.ie||"")+'" placeholder="Inscrição Estadual" style="max-width:150px">' +
+      (state.filiais.length>1 ? '<button class="btn sm danger" data-del="'+f.id+'">Remover</button>' : "");
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll("input").forEach(function(inp){
+    inp.addEventListener("input", function(){
+      var f = state.filiais.find(function(x){return x.id===inp.dataset.f;});
+      if(f){ f[inp.dataset.k] = inp.value; saveState(); renderFilialSelect(); renderCompanyLine(); renderAll(); }
+    });
+  });
+  wrap.querySelectorAll("[data-del]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.dataset.del;
+      if(!confirm("Remover esta filial? Os lançamentos digitados para ela permanecerão salvos, mas ficarão inacessíveis pela interface.")) return;
+      state.filiais = state.filiais.filter(function(x){return x.id!==id;});
+      if(state.selFilial === id) state.selFilial = state.filiais[0].id;
+      saveState();
+      renderFilialSelect(); renderCompanyLine(); renderFiliaisPanel(); renderAll();
+    });
+  });
+}
+
+/* ===================== rendering: lançamentos tables ===================== */
+function buildRow(tableBody, item, idx, tipo){
+  var tr = document.createElement("tr");
+  var info = cfopInfo(item.cfop);
+  tr.innerHTML =
+    '<td><input class="cfop-input mono" data-idx="'+idx+'" data-k="cfop" value="'+escapeHtml(item.cfop)+'" maxlength="4" placeholder="0000"></td>' +
+    '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : '<span style="color:var(--text-faint)">CFOP não catalogado</span>')+'</td>' +
+    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="contabil" value="'+fmtBRL(item.contabil)+'"></td>' +
+    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="base" value="'+fmtBRL(item.base)+'"></td>' +
+    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="imposto" value="'+fmtBRL(item.imposto)+'"></td>' +
+    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="isenta" value="'+fmtBRL(item.isenta)+'"></td>' +
+    '<td class="num"><input class="num" data-idx="'+idx+'" data-k="outras" value="'+fmtBRL(item.outras)+'"></td>' +
+    '<td><button class="row-del" data-idx="'+idx+'" title="Remover linha">✕</button></td>';
+  tableBody.appendChild(tr);
+}
+
+function renderLancTable(tipo){
+  var reg = currentReg();
+  var list = reg[tipo];
+  var table = document.getElementById(tipo === "entradas" ? "tblEntradas" : "tblSaidas");
+  var tbody = table.querySelector("tbody");
+  var tfoot = table.querySelector("tfoot");
+  tbody.innerHTML = "";
+  list.forEach(function(item, idx){ buildRow(tbody, item, idx, tipo); });
+
+  var totals = list.reduce(function(acc,r){
+    acc.contabil += parseNumberBR(r.contabil);
+    acc.base += parseNumberBR(r.base);
+    acc.imposto += parseNumberBR(r.imposto);
+    acc.isenta += parseNumberBR(r.isenta);
+    acc.outras += parseNumberBR(r.outras);
+    return acc;
+  }, {contabil:0,base:0,imposto:0,isenta:0,outras:0});
+
+  tfoot.innerHTML = '<tr><td colspan="2">Total</td>' +
+    '<td class="num">'+fmtBRL(totals.contabil)+'</td>' +
+    '<td class="num">'+fmtBRL(totals.base)+'</td>' +
+    '<td class="num">'+fmtBRL(totals.imposto)+'</td>' +
+    '<td class="num">'+fmtBRL(totals.isenta)+'</td>' +
+    '<td class="num">'+fmtBRL(totals.outras)+'</td><td></td></tr>';
+
+  tbody.querySelectorAll("input").forEach(function(inp){
+    inp.addEventListener("change", function(){
+      var i = parseInt(inp.dataset.idx,10);
+      var k = inp.dataset.k;
+      var reg2 = currentReg();
+      if(k === "cfop"){
+        reg2[tipo][i][k] = inp.value.trim();
+      } else {
+        reg2[tipo][i][k] = parseNumberBR(inp.value);
+      }
+      saveState();
+      renderLancTable(tipo);
+      renderClassificacao();
+      renderReconciliacao();
+      renderResumo();
+      renderSugestoes();
+      updateTabCounts();
+    });
+  });
+  tbody.querySelectorAll(".row-del").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var i = parseInt(btn.dataset.idx,10);
+      var reg2 = currentReg();
+      reg2[tipo].splice(i,1);
+      saveState();
+      renderLancTable(tipo);
+      renderClassificacao(); renderReconciliacao(); renderResumo(); renderSugestoes(); updateTabCounts();
+    });
+  });
+}
+
+/* ===================== rule engine ===================== */
+function classifyRow(cfop, contabil, base, imposto){
+  var info = cfopInfo(cfop);
+  contabil = parseNumberBR(contabil); base = parseNumberBR(base); imposto = parseNumberBR(imposto);
+  if(!cfop){
+    return {status:"neutral", motivo:"Linha sem CFOP preenchido."};
+  }
+  if(!info){
+    return {status:"bad", motivo:"CFOP não reconhecido na base de referência — confirme o código e a descrição junto ao SPED/ERP."};
+  }
+  // transferências
+  if(info.g === "transferencia"){
+    if(base === 0 && imposto === 0){
+      return {status:"ok", motivo:"Sem destaque de ICMS na transferência, conforme LC 204/2023. Verifique na reconciliação se o valor contábil bate com a ponta de entrada/saída correspondente."};
+    }
+    return {status:"warn", motivo:"Há valor de base/imposto destacado em CFOP de transferência. Desde 2024 (LC 204/2023) a transferência entre estabelecimentos do mesmo titular não é fato gerador de ICMS — confirme se este destaque ainda é intencional (ex.: opção do contribuinte) ou se é um lançamento desatualizado."};
+  }
+  // ST
+  if(info.c === "st"){
+    if(imposto !== 0){
+      return {status:"warn", motivo:"CFOP de mercadoria com ICMS-ST — em geral não deveria haver novo crédito/débito próprio aqui. Confirme se o valor lançado refere-se à parcela de ICMS próprio embutida na base de substituição."};
+    }
+    return {status:"ok", motivo:"Sem crédito/débito próprio, coerente com mercadoria já tributada por substituição tributária."};
+  }
+  if(info.c === "st_substituto"){
+    return {status:"ok", motivo:"Operação de substituto tributário — confirme que o ICMS-ST retido está sendo apurado no livro de apuração específico (GIA-ST/SPED ST), fora deste demonstrativo."};
+  }
+  // vedado / não gera crédito
+  if(info.c === "vedado" || info.c === "nao"){
+    if(imposto !== 0){
+      return {status:"bad", motivo:"Este CFOP normalmente não gera crédito/débito de ICMS. Há valor de imposto lançado — revisar se o aproveitamento é indevido."};
+    }
+    return {status:"ok", motivo:"Sem imposto lançado, coerente com CFOP que não gera crédito/débito."};
+  }
+  // genérico "outras não especificadas"
+  if(info.g === "generico"){
+    if(contabil > 50000){
+      return {status:"warn", motivo:"Valor relevante (R$ "+fmtBRL(contabil)+") classificado em CFOP genérico de \"outras\". Recomenda-se identificar a natureza real da operação e migrar para um CFOP específico."};
+    }
+    return {status:"ok", motivo:"Valor baixo em CFOP genérico — impacto imaterial, mas evite usá-lo como prática recorrente."};
+  }
+  // credito sim (compra/venda normal)
+  if(info.c === "sim"){
+    if(base > 0 && imposto === 0){
+      return {status:"warn", motivo:"Existe base de cálculo mas nenhum imposto creditado/debitado. Confira se o destaque de ICMS na nota fiscal foi digitado."};
+    }
+    if(base === 0 && imposto > 0){
+      return {status:"bad", motivo:"Há imposto lançado sem base de cálculo correspondente — inconsistência a corrigir."};
+    }
+    if(base > 0 && imposto > 0){
+      var aliq = imposto/base*100;
+      if(aliq > 25 || aliq < 3){
+        return {status:"warn", motivo:"Alíquota efetiva de "+fmtPct(aliq)+" foge da faixa usual (4% a 22%) para operações de mercadoria — vale conferir o lançamento."};
+      }
+      return {status:"ok", motivo:"Base e imposto coerentes entre si (alíquota efetiva de "+fmtPct(aliq)+")."};
+    }
+    return {status:"neutral", motivo:"Sem movimento de base/imposto no período."};
+  }
+  return {status:"neutral", motivo:info.obs||""};
+}
+
+function badgeHtml(status){
+  var map = {ok:["ok","OK"], warn:["warn","Atenção"], bad:["bad","Revisar"], neutral:["neutral","—"]};
+  var m = map[status] || map.neutral;
+  return '<span class="badge '+m[0]+'"><span class="dot"></span>'+m[1]+'</span>';
+}
+
+/* ===================== rendering: classificação ===================== */
+function renderClassificacao(){
+  var reg = currentReg();
+  var tbody = document.querySelector("#tblClassif tbody");
+  tbody.innerHTML = "";
+  var rows = [];
+  reg.entradas.forEach(function(r){ rows.push({bloco:"Entrada", r:r}); });
+  reg.saidas.forEach(function(r){ rows.push({bloco:"Saída", r:r}); });
+
+  rows.forEach(function(row){
+    var r = row.r;
+    var info = cfopInfo(r.cfop);
+    var base = parseNumberBR(r.base), imp = parseNumberBR(r.imposto), cont = parseNumberBR(r.contabil);
+    var aliq = base>0 ? (imp/base*100) : NaN;
+    var cl = classifyRow(r.cfop, cont, base, imp);
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>'+row.bloco+'</td>' +
+      '<td class="mono">'+escapeHtml(r.cfop||"—")+'</td>' +
+      '<td class="cfop-desc">'+(info ? escapeHtml(info.d) : "Não catalogado")+'</td>' +
+      '<td class="num">'+fmtBRL(cont)+'</td>' +
+      '<td class="num">'+fmtBRL(base)+'</td>' +
+      '<td class="num">'+fmtBRL(imp)+'</td>' +
+      '<td class="num">'+(isFinite(aliq)?fmtPct(aliq):"—")+'</td>' +
+      '<td>'+badgeHtml(cl.status)+'</td>' +
+      '<td class="cfop-desc" style="max-width:340px">'+escapeHtml(cl.motivo)+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+/* ===================== rendering: reconciliação ===================== */
+function sumTransfer(reg, tipo, codes){
+  return (reg[tipo]||[]).reduce(function(acc,r){
+    if(codes.indexOf(r.cfop) > -1) acc += parseNumberBR(r.contabil);
+    return acc;
+  }, 0);
+}
+
+function renderReconciliacao(){
+  var periodo = state.selPeriodo;
+  var totalOut = 0, totalIn = 0;
+  var rowsHtml = "";
+  state.filiais.forEach(function(f){
+    var reg = regFor(f.id, periodo);
+    var out = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT);
+    var inn = sumTransfer(reg, "entradas", TRANSFER_CODES_IN);
+    totalOut += out; totalIn += inn;
+    var saldo = out - inn;
+    var leitura = saldo === 0 ? "Sem transferências no período" :
+      (saldo > 0 ? "Remeteu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que recebeu" : "Recebeu R$ "+fmtBRL(Math.abs(saldo))+" a mais do que remeteu");
+    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
+      '<td class="num">'+fmtBRL(out)+'</td>' +
+      '<td class="num">'+fmtBRL(inn)+'</td>' +
+      '<td class="num">'+fmtBRL(saldo)+'</td>' +
+      '<td>'+escapeHtml(leitura)+'</td></tr>';
+  });
+  document.querySelector("#tblReconFiliais tbody").innerHTML = rowsHtml || '<tr><td colspan="5" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
+
+  var diff = totalOut - totalIn;
+  var ok = Math.abs(diff) < 0.01;
+  var grand = document.getElementById("reconGrand");
+  grand.className = "recon-grand " + (ok ? "ok" : "bad");
+  grand.innerHTML =
+    '<div><div class="lbl">Total saídas de transferência</div><div class="big">R$ '+fmtBRL(totalOut)+'</div></div>' +
+    '<div><div class="lbl">Total entradas de transferência</div><div class="big">R$ '+fmtBRL(totalIn)+'</div></div>' +
+    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(ok?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diff)+'</div></div>' +
+    '<div>'+badgeHtml(ok?"ok":"bad")+'<div style="font-size:12px;color:var(--text-muted);margin-top:4px;max-width:260px">'+
+      (ok ? "As transferências entre as filiais cadastradas neste período estão batendo."
+          : "Diferença encontrada — pode indicar filial faltando cadastrar/lançar, transferência em trânsito (mercadoria ainda não recebida) ou erro de digitação em uma das pontas.")+
+    '</div></div>';
+}
+
+/* ===================== rendering: resumo ===================== */
+function statCard(label, value, cls, hint){
+  return '<div class="stat"><div class="label">'+escapeHtml(label)+'</div>' +
+    '<div class="value'+(cls?" "+cls:"")+'">'+value+'</div>' +
+    (hint?'<div class="hint">'+escapeHtml(hint)+'</div>':'')+'</div>';
+}
+
+function computeTotals(reg){
+  var debito = (reg.saidas||[]).reduce(function(a,r){return a+parseNumberBR(r.imposto);},0);
+  var credito = (reg.entradas||[]).reduce(function(a,r){return a+parseNumberBR(r.imposto);},0);
+  return {debito:debito, credito:credito, saldo:debito-credito};
+}
+
+function renderResumo(){
+  var reg = currentReg();
+  var t = computeTotals(reg);
+  var wrap = document.getElementById("resumoFilial");
+  wrap.innerHTML =
+    statCard("Débito de ICMS (saídas)", "R$ "+fmtBRL(t.debito)) +
+    statCard("Crédito de ICMS (entradas)", "R$ "+fmtBRL(t.credito)) +
+    statCard(t.saldo>=0 ? "ICMS a recolher" : "Saldo credor a transportar", "R$ "+fmtBRL(Math.abs(t.saldo)), t.saldo>=0?"bad":"ok") +
+    statCard("Lançamentos no período", (reg.entradas.length+reg.saidas.length)+" linhas", null, reg.entradas.length+" entradas · "+reg.saidas.length+" saídas");
+
+  var totalDeb=0, totalCred=0, rowsHtml="";
+  state.filiais.forEach(function(f){
+    var r = regFor(f.id, state.selPeriodo);
+    var tf = computeTotals(r);
+    totalDeb += tf.debito; totalCred += tf.credito;
+    var situ = tf.saldo>=0 ? badgeHtml("bad") : badgeHtml("ok");
+    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
+      '<td class="num">'+fmtBRL(tf.debito)+'</td>' +
+      '<td class="num">'+fmtBRL(tf.credito)+'</td>' +
+      '<td class="num">'+fmtBRL(tf.saldo)+'</td>' +
+      '<td>'+situ+' '+(tf.saldo>=0?"a recolher":"credor")+'</td></tr>';
+  });
+  document.querySelector("#tblResumoPorFilial tbody").innerHTML = rowsHtml;
+
+  var wrapC = document.getElementById("resumoConsolidado");
+  var saldoC = totalDeb-totalCred;
+  wrapC.innerHTML =
+    statCard("Débito consolidado", "R$ "+fmtBRL(totalDeb)) +
+    statCard("Crédito consolidado", "R$ "+fmtBRL(totalCred)) +
+    statCard(saldoC>=0?"ICMS a recolher (grupo)":"Saldo credor (grupo)", "R$ "+fmtBRL(Math.abs(saldoC)), saldoC>=0?"bad":"ok", periodoLabel(state.selPeriodo));
+}
+
+/* ===================== rendering: sugestões / parecer ===================== */
+var STATIC_SUGGESTIONS = [
+  {icon:"§", title:"Transferência entre estabelecimentos — LC 204/2023",
+   text:"Confirme que todas as filiais estão lançando as transferências (CFOP 1.152/2.152/5.152/6.152 e correlatos) sem destaque de ICMS e que o crédito acumulado na origem está sendo transferido ao destino pelos percentuais definidos em Convênio/Decreto estadual. Deixar de transferir o crédito gera perda financeira; destacar ICMS indevidamente gera passivo."},
+  {icon:"⚑", title:"Reduza os lançamentos em CFOP genérico (x.949)",
+   text:"Na Matriz, o CFOP 1.949 concentrou R$ 1.082.505,50 em \"outra entrada não especificada\" — mais de 13% do total de entradas do período. Esse volume deveria estar pulverizado em códigos específicos (compra, devolução, uso e consumo, serviço). Fiscalizações tendem a olhar com atenção redobrada para CFOPs genéricos com valor relevante."},
+  {icon:"⇄", title:"Padronize o cruzamento mensal Matriz × Filiais antes de fechar a apuração",
+   text:"Feche um checklist mensal: para cada remessa em transferência da Matriz, confirme o recebimento na filial (mesmo valor contábil, mesmo período ou o seguinte se em trânsito). Divergências recorrentes geralmente indicam erro de CFOP (uso de código de venda em vez de transferência) ou mercadoria não escriturada na chegada."},
+  {icon:"↺", title:"Estorno de crédito em bonificações e doações (CFOP 5.910/6.910)",
+   text:"Diversos estados exigem o estorno proporcional do crédito de ICMS da compra quando a mercadoria sai como bonificação/doação sem novo débito. Verifique a legislação da UF de cada filial e, se aplicável, monte uma rotina de estorno vinculada a essas saídas."},
+  {icon:"⏳", title:"Uso e consumo — acompanhe o prazo legal do direito ao crédito",
+   text:"O direito ao crédito de ICMS sobre material de uso e consumo (CFOP 1.556/2.556) segue postergado — atualmente até 2033 (LC 171/2019 e LC 210/2023). Mantenha esses lançamentos sem crédito, mas monitore alterações na legislação, pois qualquer antecipação do prazo muda a apuração imediatamente."},
+  {icon:"%", title:"Confira a alíquota efetiva por grupo de produto",
+   text:"A alíquota média das vendas internas ficou perto de 17,5% e das compras internas em torno de 15,5%, compatível com uma cesta mista de produtos com e sem redução de base (cesta básica). Vale segregar por NCM/grupo de produto para garantir que cada item está na alíquota/benefício correto e não em uma média que mascara erros pontuais."},
+  {icon:"ST", title:"Separe a apuração do ICMS-ST do ICMS próprio",
+   text:"Os CFOPs 1.403/1.409/1.411/5.405/5.409/5.411 (e equivalentes interestaduais) não devem gerar crédito ou débito neste demonstrativo, pois o imposto já foi retido por substituição tributária. Mantenha um controle apartado (GIA-ST/SPED) para conferir se o ICMS-ST recolhido bate com o efetivamente devido, inclusive para eventual ressarcimento/complemento."},
+  {icon:"⎘", title:"Automatize a conferência via SPED Fiscal",
+   text:"Este demonstrativo é ótimo para conferência gerencial rápida, mas o ideal é validar os mesmos totais contra o Registro C197/C100 e o Bloco E (E110/E111) do SPED Fiscal de cada filial, fechando o ciclo: ERP → SPED → apuração → guia de recolhimento, todos batendo com o mesmo número."},
+  {icon:"NF", title:"Parametrização de CFOP e NCM no ERP",
+   text:"A raiz da maioria dos erros de apuração é a parametrização incorreta de CFOP/NCM no cadastro de produtos ou nas regras de saída do ERP. Recomenda-se auditoria trimestral do cadastro fiscal (CFOP padrão por tipo de operação, NCM, CEST, alíquota, redução de base) para evitar que o erro se repita mês a mês."}
+];
+
+function renderSugestoesEstaticas(){
+  var wrap = document.getElementById("suggList");
+  wrap.innerHTML = STATIC_SUGGESTIONS.map(function(s){
+    return '<div class="sugg-item"><div class="icon">'+escapeHtml(s.icon)+'</div><div><h4>'+escapeHtml(s.title)+'</h4><p>'+escapeHtml(s.text)+'</p></div></div>';
+  }).join("");
+}
+
+function renderFindingsAuto(){
+  var reg = currentReg();
+  var rows = [];
+  reg.entradas.forEach(function(r){ rows.push({bloco:"Entrada", r:r}); });
+  reg.saidas.forEach(function(r){ rows.push({bloco:"Saída", r:r}); });
+  var findings = [];
+  rows.forEach(function(row){
+    var r = row.r;
+    var cl = classifyRow(r.cfop, r.contabil, r.base, r.imposto);
+    if(cl.status === "warn" || cl.status === "bad"){
+      findings.push({status:cl.status, bloco:row.bloco, cfop:r.cfop, motivo:cl.motivo});
+    }
+  });
+  var wrap = document.getElementById("findingsAuto");
+  if(findings.length === 0){
+    wrap.innerHTML = '<div class="finding-item">Nenhuma inconsistência encontrada para <b>'+escapeHtml(filialName(state.selFilial))+'</b> em <b>'+escapeHtml(periodoLabel(state.selPeriodo))+'</b> com os lançamentos atuais.</div>';
+    return;
+  }
+  wrap.innerHTML = findings.map(function(f){
+    return '<div class="finding-item '+f.status+'"><b>'+escapeHtml(f.bloco)+' · CFOP '+escapeHtml(f.cfop||"—")+'</b> — '+escapeHtml(f.motivo)+'</div>';
+  }).join("");
+}
+
+function renderSugestoes(){
+  renderFindingsAuto();
+}
+
+/* ===================== tab counts ===================== */
+function updateTabCounts(){
+  var reg = currentReg();
+  var rows = reg.entradas.concat(reg.saidas);
+  var warn=0, bad=0;
+  rows.forEach(function(r){
+    var cl = classifyRow(r.cfop, r.contabil, r.base, r.imposto);
+    if(cl.status==="warn") warn++;
+    if(cl.status==="bad") bad++;
+  });
+  var cntClassif = document.getElementById("cntClassif");
+  if(bad>0){ cntClassif.textContent = bad; cntClassif.className="count bad"; }
+  else if(warn>0){ cntClassif.textContent = warn; cntClassif.className="count warn"; }
+  else { cntClassif.textContent = "OK"; cntClassif.className="count"; }
+
+  var periodo = state.selPeriodo;
+  var totalOut=0, totalIn=0;
+  state.filiais.forEach(function(f){
+    var r = regFor(f.id, periodo);
+    totalOut += sumTransfer(r,"saidas",TRANSFER_CODES_OUT);
+    totalIn += sumTransfer(r,"entradas",TRANSFER_CODES_IN);
+  });
+  var cntRecon = document.getElementById("cntRecon");
+  var diffOk = Math.abs(totalOut-totalIn) < 0.01;
+  cntRecon.textContent = diffOk ? "OK" : "!";
+  cntRecon.className = "count " + (diffOk ? "" : "bad");
+}
+
+/* ===================== file saving (artifact-aware, with local fallback) ===================== */
+var downloadsNs = null, downloadsChecked = false;
+function getDownloadsNs(){
+  if(downloadsChecked) return Promise.resolve(downloadsNs);
+  downloadsChecked = true;
+  if(typeof window.claude === "undefined" || typeof window.claude.use !== "function"){
+    return Promise.resolve(null);
+  }
+  return window.claude.use("downloads").then(function(ns){ downloadsNs = ns; return ns; }).catch(function(){ return null; });
+}
+function saveFile(filename, text, mime){
+  getDownloadsNs().then(function(ns){
+    if(ns){
+      ns.save({filename:filename, data:text}).catch(function(err){
+        if(err && err.code === "declined") return;
+        fallbackDownload(filename, text, mime);
+      });
+    } else {
+      fallbackDownload(filename, text, mime);
+    }
+  });
+}
+function fallbackDownload(filename, text, mime){
+  try{
+    var blob = new Blob([text], {type:(mime||"text/plain")+";charset=utf-8;"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }catch(e){
+    alert("Não foi possível salvar o arquivo neste ambiente.");
+  }
+}
+
+/* ===================== CSV export ===================== */
+function exportCsv(tipo){
+  var reg = currentReg();
+  var list = reg[tipo];
+  var headerImp = tipo==="entradas" ? "Imposto Creditado" : "Imposto Debitado";
+  var lines = ["CFOP;Descricao;Valores Contabeis;Base de Calculo;"+headerImp+";Isentas ou Nao Tributadas;Outras"];
+  list.forEach(function(r){
+    var info = cfopInfo(r.cfop);
+    lines.push([r.cfop, info?info.d:"", fmtBRL(r.contabil), fmtBRL(r.base), fmtBRL(r.imposto), fmtBRL(r.isenta), fmtBRL(r.outras)].join(";"));
+  });
+  var filename = tipo+"_"+filialName(state.selFilial).replace(/\s+/g,"-")+"_"+state.selPeriodo+".csv";
+  saveFile(filename, lines.join("\n"), "text/csv");
+}
+
+/* ===================== render all ===================== */
+function renderAll(){
+  renderLancTable("entradas");
+  renderLancTable("saidas");
+  renderClassificacao();
+  renderReconciliacao();
+  renderResumo();
+  renderSugestoes();
+  updateTabCounts();
+}
+
+/* ===================== events ===================== */
+function initTabs(){
+  document.querySelectorAll(".tab").forEach(function(tab){
+    tab.addEventListener("click", function(){
+      document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+      document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active");});
+      tab.classList.add("active");
+      document.getElementById("panel-"+tab.dataset.tab).classList.add("active");
+    });
+  });
+}
+
+function initControls(){
+  document.getElementById("selFilial").addEventListener("change", function(e){
+    state.selFilial = e.target.value; saveState(); renderCompanyLine(); renderAll();
+  });
+  document.getElementById("selPeriodo").addEventListener("change", function(e){
+    state.selPeriodo = e.target.value; saveState(); renderCompanyLine(); renderAll();
+  });
+  document.getElementById("btnNovoPeriodo").addEventListener("click", function(){
+    var label = prompt("Nome do novo período (ex.: Setembro/2026):");
+    if(!label) return;
+    var id = prompt("Identificador curto do período (ex.: 2026-09):", label.toLowerCase().replace(/[^a-z0-9]+/g,"-"));
+    if(!id) return;
+    if(state.periodos.some(function(p){return p.id===id;})){ alert("Já existe um período com esse identificador."); return; }
+    state.periodos.push({id:id, label:label});
+    state.selPeriodo = id;
+    saveState(); renderPeriodoSelect(); renderCompanyLine(); renderAll();
+  });
+  document.getElementById("btnGerenciarFiliais").addEventListener("click", function(){
+    var p = document.getElementById("painelFiliais");
+    p.style.display = p.style.display === "none" ? "block" : "none";
+  });
+  document.getElementById("btnAddFilial").addEventListener("click", function(){
+    var nome = prompt("Nome da nova filial (ex.: Filial 01 — Campinas):");
+    if(!nome) return;
+    var id = "f_"+uid();
+    state.filiais.push({id:id, nome:nome, uf:"", cnpj:"", ie:""});
+    saveState();
+    renderFiliaisPanel(); renderFilialSelect(); renderAll();
+  });
+
+  document.getElementById("btnAddEntrada").addEventListener("click", function(){
+    currentReg().entradas.push({cfop:"", contabil:0, base:0, imposto:0, isenta:0, outras:0});
+    saveState(); renderLancTable("entradas");
+  });
+  document.getElementById("btnAddSaida").addEventListener("click", function(){
+    currentReg().saidas.push({cfop:"", contabil:0, base:0, imposto:0, isenta:0, outras:0});
+    saveState(); renderLancTable("saidas");
+  });
+  document.getElementById("btnCsvEntrada").addEventListener("click", function(){ exportCsv("entradas"); });
+  document.getElementById("btnCsvSaida").addEventListener("click", function(){ exportCsv("saidas"); });
+
+  document.getElementById("btnExportJson").addEventListener("click", function(){
+    saveFile("backup-apuracao-icms-megag.json", JSON.stringify(state,null,2), "application/json");
+  });
+  document.getElementById("btnImportJson").addEventListener("click", function(){
+    document.getElementById("fileImport").click();
+  });
+  document.getElementById("fileImport").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var parsed = JSON.parse(reader.result);
+        if(!parsed.filiais || !parsed.periodos || !parsed.registros) throw new Error("Formato inválido");
+        state = parsed;
+        if(!state.filiais.some(function(f){return f.id===state.selFilial;})) state.selFilial = state.filiais[0].id;
+        if(!state.periodos.some(function(p){return p.id===state.selPeriodo;})) state.selPeriodo = state.periodos[0].id;
+        saveState();
+        renderFilialSelect(); renderPeriodoSelect(); renderCompanyLine(); renderFiliaisPanel(); renderAll();
+        alert("Backup importado com sucesso.");
+      }catch(err){
+        alert("Não foi possível importar este arquivo: "+err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+}
+
+/* ===================== init ===================== */
+loadState();
+initTabs();
+initControls();
+renderFilialSelect();
+renderPeriodoSelect();
+renderCompanyLine();
+renderFiliaisPanel();
+renderSugestoesEstaticas();
+renderAll();
+
+})();
+</script>
