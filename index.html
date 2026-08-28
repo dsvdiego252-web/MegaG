@@ -451,12 +451,12 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
   <div class="panel" id="panel-reconciliacao">
     <div class="card">
       <div class="card-head">
-        <h2>Transferências — Matriz × Filiais</h2>
-        <div class="desc">Soma, no período selecionado, todas as saídas classificadas como transferência (CFOP 5.151/5.152/5.409/5.408/6.xxx) contra todas as entradas de transferência (1.151/1.152/1.409/1.408/2.xxx) de <b>todas as filiais cadastradas</b>. Em uma transferência, cada saída deve ter uma entrada correspondente — o total global deve bater.</div>
+        <h2>Transferências dentro do mesmo estado</h2>
+        <div class="desc">CFOP 1.151/1.152/1.408/1.409 (entrada) × 5.151/5.152/5.408/5.409 (saída) de <b>todas as filiais cadastradas</b>. Desde a LC 204/2023 não há incidência de ICMS nessas transferências — a comparação é só pelo valor contábil, e o total global deve bater.</div>
       </div>
-      <div class="recon-grand" id="reconGrand"></div>
+      <div class="recon-grand" id="reconGrandEstado"></div>
       <div class="table-wrap">
-        <table id="tblReconFiliais">
+        <table id="tblReconFiliaisEstado">
           <thead>
             <tr>
               <th>Filial</th>
@@ -469,7 +469,34 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
           <tbody></tbody>
         </table>
       </div>
-      <div class="helptext">Saldo líquido positivo = a filial remeteu mais do que recebeu em transferência (esperado para a Matriz/CD). Saldo negativo = recebeu mais do que remeteu (esperado para filiais de venda). O que importa é o <b>total geral</b> acima fechar em zero.</div>
+      <div class="helptext">Saldo líquido positivo = a filial remeteu mais do que recebeu (normal para Matriz/centro de distribuição). Saldo negativo = recebeu mais do que remeteu (normal para uma filial de venda). O que importa é o <b>total geral</b> acima fechar em zero.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Transferências interestaduais</h2>
+        <div class="desc">CFOP 2.151/2.152/2.408/2.409 (entrada) × 6.151/6.152/6.408/6.409 (saída). Diferente da transferência dentro do estado, a transferência para filial de <b>outro estado gera débito de ICMS na origem</b>, e a filial destinatária deve tomar o <b>crédito correspondente na entrada</b> — a comparação aqui é por valor contábil, base de cálculo e imposto ao mesmo tempo.</div>
+      </div>
+      <div class="recon-grand" id="reconGrandInterestadual"></div>
+      <div class="table-wrap">
+        <table id="tblReconFiliaisInterestadual">
+          <thead>
+            <tr>
+              <th>Filial</th>
+              <th class="num">Saída — contábil</th>
+              <th class="num">Saída — base</th>
+              <th class="num">Saída — débito</th>
+              <th class="num">Entrada — contábil</th>
+              <th class="num">Entrada — base</th>
+              <th class="num">Entrada — crédito</th>
+              <th class="num">Saldo do débito/crédito</th>
+              <th>Leitura</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="helptext">Saldo do débito/crédito = débito gerado nas saídas desta filial menos crédito tomado nas entradas desta filial. No grupo todo, o <b>total de débito gerado nas saídas interestaduais deve ser igual ao total de crédito tomado nas entradas</b> — é o ICMS que "muda de UF" na transferência.</div>
     </div>
   </div>
 
@@ -585,7 +612,7 @@ var CFOP_DB = {
   "5408":{d:"Transferência para industrialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST."},
   "5409":{d:"Transferência para comercialização em operação com ICMS-ST", g:"st", c:"st", obs:"Transferência de mercadoria com ST — deve casar com a entrada 1.409/2.409 da filial destinatária."},
   "5411":{d:"Devolução de compra em operação com ICMS-ST", g:"st", c:"st", obs:"Devolução ao fornecedor de mercadoria com substituição tributária."},
-  "5910":{d:"Remessa em bonificação, doação ou brinde", g:"bonificacao", c:"nao", obs:"Em regra sem débito; várias UFs exigem estorno proporcional do crédito da compra vinculada à mercadoria doada — verificar."},
+  "5910":{d:"Remessa em bonificação, doação ou brinde", g:"bonificacao", c:"sim", obs:"Gera débito normal de ICMS quando há destaque na nota — bonificação é redução de preço, não isenção. Não gera efeito de PIS/COFINS. Verifique também se a UF exige estorno proporcional do crédito da compra vinculada à mercadoria doada."},
   "5911":{d:"Remessa de amostra grátis", g:"bonificacao", c:"nao", obs:"Sem valor comercial, sem débito."},
   "5915":{d:"Remessa para conserto ou reparo", g:"outras", c:"nao", obs:"Operação com suspensão do ICMS; controlar o retorno para evitar mercadoria \"perdida\" na apuração."},
   "5920":{d:"Remessa de vasilhame ou sacaria", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
@@ -603,7 +630,7 @@ var CFOP_DB = {
   "6408":{d:"Transferência para industrialização com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria já sujeita a ST."},
   "6409":{d:"Transferência para comercialização com ICMS-ST — outro estado", g:"st", c:"st", obs:"Transferência de mercadoria com ST — deve casar com a entrada 1.409/2.409 da filial destinatária."},
   "6411":{d:"Devolução de compra com ICMS-ST — outro estado", g:"st", c:"st", obs:"Devolução ao fornecedor de mercadoria com substituição tributária."},
-  "6910":{d:"Remessa em bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"nao", obs:"Verificar exigência de estorno proporcional de crédito conforme legislação da UF de origem."},
+  "6910":{d:"Remessa em bonificação, doação ou brinde — outro estado", g:"bonificacao", c:"sim", obs:"Gera débito normal de ICMS pela alíquota interestadual quando há destaque na nota. Não gera efeito de PIS/COFINS. Verifique também exigência de estorno proporcional de crédito conforme legislação da UF de origem."},
   "6915":{d:"Remessa para conserto ou reparo — outro estado", g:"outras", c:"nao", obs:"Operação com suspensão do ICMS."},
   "6920":{d:"Remessa de vasilhame ou sacaria — outro estado", g:"outras", c:"nao", obs:"Retorno de embalagem, sem tributação."},
   "6949":{d:"Outra saída não especificada — outro estado", g:"generico", c:"revisar", obs:"CFOP genérico — reclassificar quando o valor for relevante."},
@@ -623,8 +650,10 @@ var CFOP_DB = {
   "5909":{d:"Retorno de bem remetido por conta de contrato de comodato", g:"outras", c:"nao", obs:"Retorno de bem cedido em comodato — operação sem tributação de ICMS."}
 };
 
-var TRANSFER_CODES_OUT = ["5151","5152","5408","5409","6151","6152","6408","6409"];
-var TRANSFER_CODES_IN  = ["1151","1152","1408","1409","2151","2152","2408","2409"];
+var TRANSFER_CODES_OUT_ESTADO = ["5151","5152","5408","5409"];
+var TRANSFER_CODES_IN_ESTADO  = ["1151","1152","1408","1409"];
+var TRANSFER_CODES_OUT_INTER  = ["6151","6152","6408","6409"];
+var TRANSFER_CODES_IN_INTER   = ["2151","2152","2408","2409"];
 
 /* ===================== state ===================== */
 var STORAGE_KEY = "icms_apuracao_megag_v1";
@@ -1099,10 +1128,30 @@ function classifyRow(cfop, contabil, base, imposto){
   }
   // transferências
   if(info.g === "transferencia"){
-    if(base === 0 && imposto === 0){
-      return {status:"ok", motivo:"Sem destaque de ICMS na transferência, conforme LC 204/2023. Verifique na reconciliação se o valor contábil bate com a ponta de entrada/saída correspondente."};
+    var prefixo = String(cfop).charAt(0);
+    var interestadual = (prefixo === "2" || prefixo === "6");
+    if(!interestadual){
+      // mesmo estado: LC 204/2023 = não incidência de ICMS, esperado sem destaque
+      if(base === 0 && imposto === 0){
+        return {status:"ok", motivo:"Sem destaque de ICMS, conforme LC 204/2023 (transferência dentro do mesmo estado). Verifique na reconciliação se o valor contábil bate com a ponta de entrada/saída correspondente."};
+      }
+      return {status:"warn", motivo:"Há valor de base/imposto destacado em transferência dentro do mesmo estado. Desde 2024 (LC 204/2023) essa operação não é fato gerador de ICMS — confirme se o destaque ainda é intencional ou se é um lançamento desatualizado."};
     }
-    return {status:"warn", motivo:"Há valor de base/imposto destacado em CFOP de transferência. Desde 2024 (LC 204/2023) a transferência entre estabelecimentos do mesmo titular não é fato gerador de ICMS — confirme se este destaque ainda é intencional (ex.: opção do contribuinte) ou se é um lançamento desatualizado."};
+    // outro estado: transferência de crédito interestadual é obrigatória — a saída deve gerar débito na origem e a entrada, crédito no destino
+    if(base === 0 && imposto === 0){
+      return {status:"warn", motivo:"Transferência interestadual sem base/imposto destacado. A saída para filial de outro estado deve gerar débito de ICMS na origem, e a entrada correspondente deve gerar o crédito na filial de destino — confirme se o cálculo foi feito."};
+    }
+    if(base > 0 && imposto === 0){
+      return {status:"warn", motivo:"Há base de cálculo mas nenhum imposto destacado nesta transferência interestadual — confira se o débito/crédito foi calculado corretamente."};
+    }
+    if(base === 0 && imposto > 0){
+      return {status:"bad", motivo:"Há imposto destacado sem base de cálculo correspondente nesta transferência interestadual — inconsistência a corrigir."};
+    }
+    var aliqTransf = imposto/base*100;
+    if(aliqTransf > 25 || aliqTransf < 3){
+      return {status:"warn", motivo:"Alíquota efetiva de "+fmtPct(aliqTransf)+" foge da faixa usual (7% a 12%) para transferência interestadual — confira o cálculo."};
+    }
+    return {status:"ok", motivo:"Transferência interestadual com débito/crédito de ICMS destacado (alíquota efetiva de "+fmtPct(aliqTransf)+"). Confira na Reconciliação se o débito desta saída bate com o crédito tomado na entrada da filial de destino."};
   }
   // ST
   if(info.c === "st"){
@@ -1185,21 +1234,22 @@ function renderClassificacao(){
 }
 
 /* ===================== rendering: reconciliação ===================== */
-function sumTransfer(reg, tipo, codes){
+function sumTransfer(reg, tipo, codes, campo){
+  campo = campo || "contabil";
   return (reg[tipo]||[]).reduce(function(acc,r){
-    if(codes.indexOf(r.cfop) > -1) acc += parseNumberBR(r.contabil);
+    if(codes.indexOf(r.cfop) > -1) acc += parseNumberBR(r[campo]);
     return acc;
   }, 0);
 }
 
-function renderReconciliacao(){
+function renderReconciliacaoEstado(){
   var periodo = state.selPeriodo;
   var totalOut = 0, totalIn = 0;
   var rowsHtml = "";
   state.filiais.forEach(function(f){
     var reg = regFor(f.id, periodo);
-    var out = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT);
-    var inn = sumTransfer(reg, "entradas", TRANSFER_CODES_IN);
+    var out = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_ESTADO);
+    var inn = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_ESTADO);
     totalOut += out; totalIn += inn;
     var saldo = out - inn;
     var leitura = saldo === 0 ? "Sem transferências no período (ou entradas = saídas)" :
@@ -1210,20 +1260,72 @@ function renderReconciliacao(){
       '<td class="num">'+fmtBRL(saldo)+'</td>' +
       '<td>'+escapeHtml(leitura)+'</td></tr>';
   });
-  document.querySelector("#tblReconFiliais tbody").innerHTML = rowsHtml || '<tr><td colspan="5" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
+  document.querySelector("#tblReconFiliaisEstado tbody").innerHTML = rowsHtml || '<tr><td colspan="5" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
 
   var diff = totalOut - totalIn;
   var ok = Math.abs(diff) < 0.01;
-  var grand = document.getElementById("reconGrand");
+  var grand = document.getElementById("reconGrandEstado");
   grand.className = "recon-grand " + (ok ? "ok" : "bad");
   grand.innerHTML =
-    '<div><div class="lbl">Total saídas de transferência</div><div class="big">R$ '+fmtBRL(totalOut)+'</div></div>' +
-    '<div><div class="lbl">Total entradas de transferência</div><div class="big">R$ '+fmtBRL(totalIn)+'</div></div>' +
+    '<div><div class="lbl">Total saídas (contábil)</div><div class="big">R$ '+fmtBRL(totalOut)+'</div></div>' +
+    '<div><div class="lbl">Total entradas (contábil)</div><div class="big">R$ '+fmtBRL(totalIn)+'</div></div>' +
     '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(ok?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diff)+'</div></div>' +
     '<div>'+badgeHtml(ok?"ok":"bad")+'<div style="font-size:12px;color:var(--text-muted);margin-top:4px;max-width:260px">'+
-      (ok ? "As transferências entre as filiais cadastradas neste período estão batendo."
+      (ok ? "As transferências dentro do estado entre as filiais cadastradas neste período estão batendo."
           : "Diferença encontrada — pode indicar filial faltando cadastrar/lançar, transferência em trânsito (mercadoria ainda não recebida) ou erro de digitação em uma das pontas.")+
     '</div></div>';
+  return ok;
+}
+
+function renderReconciliacaoInterestadual(){
+  var periodo = state.selPeriodo;
+  var totalOutCont=0, totalOutBase=0, totalOutImp=0, totalInCont=0, totalInBase=0, totalInImp=0;
+  var rowsHtml = "";
+  state.filiais.forEach(function(f){
+    var reg = regFor(f.id, periodo);
+    var outCont = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "contabil");
+    var outBase = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "base");
+    var outImp  = sumTransfer(reg, "saidas", TRANSFER_CODES_OUT_INTER, "imposto");
+    var inCont = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "contabil");
+    var inBase = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "base");
+    var inImp  = sumTransfer(reg, "entradas", TRANSFER_CODES_IN_INTER, "imposto");
+    totalOutCont+=outCont; totalOutBase+=outBase; totalOutImp+=outImp;
+    totalInCont+=inCont; totalInBase+=inBase; totalInImp+=inImp;
+    var saldoImp = outImp - inImp;
+    var leitura = (outCont===0 && inCont===0) ? "Sem transferência interestadual no período" :
+      (saldoImp === 0 ? "Débito gerado nas saídas = crédito tomado nas entradas" :
+       (saldoImp > 0 ? "Gerou R$ "+fmtBRL(Math.abs(saldoImp))+" a mais de débito do que tomou de crédito" : "Tomou R$ "+fmtBRL(Math.abs(saldoImp))+" a mais de crédito do que gerou de débito"));
+    rowsHtml += '<tr><td>'+escapeHtml(f.nome)+'</td>' +
+      '<td class="num">'+fmtBRL(outCont)+'</td>' +
+      '<td class="num">'+fmtBRL(outBase)+'</td>' +
+      '<td class="num">'+fmtBRL(outImp)+'</td>' +
+      '<td class="num">'+fmtBRL(inCont)+'</td>' +
+      '<td class="num">'+fmtBRL(inBase)+'</td>' +
+      '<td class="num">'+fmtBRL(inImp)+'</td>' +
+      '<td class="num">'+fmtBRL(saldoImp)+'</td>' +
+      '<td>'+escapeHtml(leitura)+'</td></tr>';
+  });
+  document.querySelector("#tblReconFiliaisInterestadual tbody").innerHTML = rowsHtml || '<tr><td colspan="9" style="color:var(--text-faint)">Nenhuma filial cadastrada.</td></tr>';
+
+  var diffImp = totalOutImp - totalInImp;
+  var ok = Math.abs(diffImp) < 0.01;
+  var grand = document.getElementById("reconGrandInterestadual");
+  grand.className = "recon-grand " + (ok ? "ok" : "bad");
+  grand.innerHTML =
+    '<div><div class="lbl">Débito gerado nas saídas</div><div class="big">R$ '+fmtBRL(totalOutImp)+'</div></div>' +
+    '<div><div class="lbl">Crédito tomado nas entradas</div><div class="big">R$ '+fmtBRL(totalInImp)+'</div></div>' +
+    '<div><div class="lbl">Diferença</div><div class="big" style="color:'+(ok?"var(--ok)":"var(--bad)")+'">R$ '+fmtBRL(diffImp)+'</div></div>' +
+    '<div>'+badgeHtml(ok?"ok":"bad")+'<div style="font-size:12px;color:var(--text-muted);margin-top:4px;max-width:280px">'+
+      (ok ? "O débito de ICMS gerado nas transferências interestaduais bate com o crédito tomado nas filiais de destino."
+          : "Diferença encontrada — o débito gerado numa ponta não está batendo com o crédito tomado na outra. Confira se a filial de destino registrou o crédito pela mesma base/alíquota da saída, ou se falta lançar alguma ponta.")+
+    '</div></div>';
+  return ok;
+}
+
+function renderReconciliacao(){
+  var okEstado = renderReconciliacaoEstado();
+  var okInter = renderReconciliacaoInterestadual();
+  return okEstado && okInter;
 }
 
 /* ===================== rendering: resumo ===================== */
@@ -1280,7 +1382,7 @@ var STATIC_SUGGESTIONS = [
   {icon:"⇄", title:"Padronize o cruzamento mensal Matriz × Filiais antes de fechar a apuração",
    text:"Feche um checklist mensal: para cada remessa em transferência da Matriz, confirme o recebimento na filial (mesmo valor contábil, mesmo período ou o seguinte se em trânsito). Divergências recorrentes geralmente indicam erro de CFOP (uso de código de venda em vez de transferência) ou mercadoria não escriturada na chegada."},
   {icon:"↺", title:"Bonificações (CFOP 1.910/2.910/5.910/6.910): ICMS normal, PIS/COFINS não",
-   text:"Na entrada (1.910/2.910), o crédito de ICMS é normal quando a nota traz o imposto destacado — bonificação é redução de preço, não isenção. O que não gera é crédito de PIS/COFINS sobre a parcela bonificada, por não haver custo/contraprestação no regime não-cumulativo. Na saída (5.910/6.910), verifique a legislação de cada UF quanto à exigência de estorno proporcional do crédito de ICMS da compra vinculada à mercadoria doada."},
+   text:"Tanto na entrada (1.910/2.910, crédito) quanto na saída (5.910/6.910, débito), o ICMS incide normalmente quando a nota traz o imposto destacado — bonificação é redução de preço, não isenção. O que não gera efeito é o PIS/COFINS sobre a parcela bonificada, por não haver custo/contraprestação no regime não-cumulativo. Na saída, verifique também a legislação de cada UF quanto à exigência de estorno proporcional do crédito de ICMS da compra vinculada à mercadoria doada."},
   {icon:"⏳", title:"Uso e consumo — acompanhe o prazo legal do direito ao crédito",
    text:"O direito ao crédito de ICMS sobre material de uso e consumo (CFOP 1.556/2.556) segue postergado — atualmente até 2033 (LC 171/2019 e LC 210/2023). Mantenha esses lançamentos sem crédito, mas monitore alterações na legislação, pois qualquer antecipação do prazo muda a apuração imediatamente."},
   {icon:"%", title:"Confira a alíquota efetiva por grupo de produto",
@@ -1343,14 +1445,16 @@ function updateTabCounts(){
   else { cntClassif.textContent = "OK"; cntClassif.className="count"; }
 
   var periodo = state.selPeriodo;
-  var totalOut=0, totalIn=0;
+  var totalOutEstado=0, totalInEstado=0, totalOutImp=0, totalInImp=0;
   state.filiais.forEach(function(f){
     var r = regFor(f.id, periodo);
-    totalOut += sumTransfer(r,"saidas",TRANSFER_CODES_OUT);
-    totalIn += sumTransfer(r,"entradas",TRANSFER_CODES_IN);
+    totalOutEstado += sumTransfer(r,"saidas",TRANSFER_CODES_OUT_ESTADO);
+    totalInEstado += sumTransfer(r,"entradas",TRANSFER_CODES_IN_ESTADO);
+    totalOutImp += sumTransfer(r,"saidas",TRANSFER_CODES_OUT_INTER,"imposto");
+    totalInImp += sumTransfer(r,"entradas",TRANSFER_CODES_IN_INTER,"imposto");
   });
   var cntRecon = document.getElementById("cntRecon");
-  var diffOk = Math.abs(totalOut-totalIn) < 0.01;
+  var diffOk = Math.abs(totalOutEstado-totalInEstado) < 0.01 && Math.abs(totalOutImp-totalInImp) < 0.01;
   cntRecon.textContent = diffOk ? "OK" : "!";
   cntRecon.className = "count " + (diffOk ? "" : "bad");
 }
