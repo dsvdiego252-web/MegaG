@@ -304,13 +304,15 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .hero-status-difflbl{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-top:2px;}
 
 /* simple side-by-side comparison bars (saída x entrada, compras x vendas...) */
-.compare-bars{display:flex; flex-direction:column; gap:9px;}
-.compare-row{display:flex; align-items:center; gap:12px;}
-.compare-label{width:118px; flex:none; font-size:10.5px; line-height:1.25; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); font-weight:700;}
+.compare-bars{display:flex; flex-direction:column; gap:16px;}
+.compare-group-block{display:flex; flex-direction:column; gap:6px;}
+.compare-group-title{font-size:12.5px; font-weight:700; color:var(--text);}
 .compare-group-label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); font-weight:700; margin:16px 0 8px;}
 .compare-group-label:first-child{margin-top:0;}
-.compare-track{flex:1; background:rgba(127,127,127,.14); border-radius:6px; height:28px; overflow:hidden; min-width:0;}
-.compare-fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; color:#fff; font-size:12px; font-weight:700; font-family:"IBM Plex Mono",monospace; white-space:nowrap; min-width:fit-content; transition:width .2s;}
+.compare-row{display:flex; align-items:center; gap:12px;}
+.compare-label{width:58px; flex:none; font-size:10.5px; line-height:1.25; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); font-weight:700;}
+.compare-track{flex:1; background:rgba(127,127,127,.14); border-radius:6px; height:26px; overflow:hidden; min-width:0;}
+.compare-fill{height:100%; border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; color:#fff; font-size:11.5px; font-weight:700; font-family:"IBM Plex Mono",monospace; white-space:nowrap; min-width:fit-content; transition:width .2s;}
 
 /* donut composition chart */
 .donut-card{display:flex; align-items:center; gap:32px; flex-wrap:wrap;}
@@ -318,28 +320,32 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
 .donut-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; padding:0 22px;}
 .donut-center .value{font-family:"IBM Plex Mono",monospace; font-weight:700; font-size:16px; color:var(--text); line-height:1.2;}
 .donut-center .label{font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px;}
-.donut-legend{display:flex; flex-direction:column; gap:11px; flex:1; min-width:230px;}
-.donut-legend-row{display:flex; align-items:center; gap:10px;}
-.donut-legend-swatch{width:11px; height:11px; border-radius:3px; flex:none;}
-.donut-legend-label{flex:1; font-size:13px; color:var(--text);}
-.donut-legend-value{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--text-muted); text-align:right;}
-.donut-legend-pct{width:54px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:700; color:var(--text);}
+.donut-legend{display:flex; flex-direction:column; gap:14px; flex:1; min-width:220px;}
+.donut-legend-row{display:flex; align-items:flex-start; gap:10px;}
+.donut-legend-swatch{width:11px; height:11px; border-radius:3px; flex:none; margin-top:4px;}
+.donut-legend-text{flex:1; min-width:0;}
+.donut-legend-label{font-size:13px; color:var(--text); font-weight:600;}
+.donut-legend-value{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text-muted); margin-top:2px;}
+.donut-legend-pct{font-family:"IBM Plex Mono",monospace; font-size:16px; font-weight:700; color:var(--text); margin-top:1px;}
 
 /* grouped bars: compras x vendas por loja */
-.pair-legend{display:flex; gap:22px; margin-bottom:18px; font-size:12.5px; color:var(--text-muted);}
+.pair-legend{display:flex; gap:22px; margin-bottom:8px; font-size:12.5px; color:var(--text-muted);}
 .pair-legend .item{display:flex; align-items:center; gap:7px;}
 .pair-legend .swatch{width:10px; height:10px; border-radius:3px; flex:none;}
-.pair-block{padding:13px 0;}
-.pair-block:not(:last-child){border-bottom:1px solid var(--border);}
-.pair-block-label{font-size:13px; font-weight:700; color:var(--text); margin-bottom:9px;}
-.pair-line{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
-.pair-line:last-child{margin-bottom:0;}
-.pair-track{flex:1; background:var(--surface-2); border-radius:5px; height:18px; overflow:hidden; min-width:0;}
-.pair-fill{height:100%; border-radius:5px; min-width:2px;}
-.pair-fill.compras{background:var(--accent);}
-.pair-fill.vendas{background:var(--chart-2);}
-.pair-value{width:150px; flex:none; text-align:right; font-family:"IBM Plex Mono",monospace; font-size:12px; font-variant-numeric:tabular-nums; color:var(--text-muted);}
-.pair-empty{font-size:11.5px; color:var(--text-faint); padding:2px 0 8px;}
+
+/* vertical grouped bar chart */
+.vbar-plot{position:relative; height:230px; margin:26px 0 0 76px;}
+.vbar-gridline{position:absolute; left:0; right:0; border-top:1px dashed var(--border);}
+.vbar-gridline .tick{position:absolute; right:100%; margin-right:10px; top:-7px; font-size:10.5px; color:var(--text-faint); font-family:"IBM Plex Mono",monospace; white-space:nowrap;}
+.vbar-bars{position:absolute; inset:0; display:flex; align-items:flex-end; gap:22px; padding:0 4px;}
+.vbar-group{position:relative; flex:1; display:flex; justify-content:center; align-items:flex-end; height:100%; min-width:0;}
+.vbar-cols{display:flex; align-items:flex-end; gap:5px; height:100%;}
+.vbar-col{width:28px; border-radius:4px 4px 0 0; min-height:2px; transition:height .2s;}
+.vbar-col.compras{background:var(--accent);}
+.vbar-col.vendas{background:var(--chart-2);}
+.vbar-empty-mark{position:absolute; bottom:0; left:0; right:0; text-align:center; font-size:10.5px; color:var(--text-faint);}
+.vbar-labels{display:flex; gap:22px; margin:8px 0 0 76px; padding:0 4px;}
+.vbar-label{flex:1; text-align:center; font-size:11.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
 
 /* supporting/secondary detail (demoted visually below a headline chart) */
 .detail-block{margin-top:24px; padding-top:18px; border-top:1px dashed var(--border);}
@@ -506,13 +512,11 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;">
         <div>
           <div class="hero-status" id="heroEstado"></div>
-          <div class="compare-group-label">Valor da mercadoria transferida (contábil), por tipo</div>
-          <div class="compare-bars" id="compareEstado"></div>
+          <div class="compare-bars" id="compareEstado" style="margin-top:16px;"></div>
         </div>
         <div>
           <div class="hero-status" id="heroInter"></div>
-          <div class="compare-group-label">Valor da mercadoria transferida (contábil), por tipo</div>
-          <div class="compare-bars" id="compareInterValor"></div>
+          <div class="compare-bars" id="compareInterValor" style="margin-top:16px;"></div>
           <div class="compare-group-label">ICMS da transferência</div>
           <div class="compare-bars" id="compareInterIcms"></div>
         </div>
@@ -622,7 +626,8 @@ table input.cfop-input{width:64px; min-width:64px; font-weight:600;}
         <div class="item"><span class="swatch" style="background:var(--accent)"></span>Compras</div>
         <div class="item"><span class="swatch" style="background:var(--chart-2)"></span>Vendas</div>
       </div>
-      <div id="pairChart"></div>
+      <div class="vbar-plot" id="pairChartPlot"></div>
+      <div class="vbar-labels" id="pairChartLabels"></div>
       <div class="detail-block">
         <div class="detail-block-label">Detalhamento por loja — composição e ICMS</div>
         <div class="table-wrap">
@@ -1436,6 +1441,39 @@ function renderCompareBars(containerId, rows){
   }).join("");
 }
 
+// groups: [{label, saida, entrada}] — saída/entrada de cada categoria, uma barra cada, escala compartilhada
+function renderCompareGrouped(containerId, groups){
+  var allVals = [];
+  groups.forEach(function(g){ allVals.push(g.saida, g.entrada); });
+  var max = Math.max.apply(null, allVals.concat([0.01]));
+  document.getElementById(containerId).innerHTML = groups.map(function(g){
+    var pctS = Math.max(3, g.saida/max*100);
+    var pctE = Math.max(3, g.entrada/max*100);
+    return '<div class="compare-group-block">' +
+      '<div class="compare-group-title">'+escapeHtml(g.label)+'</div>' +
+      '<div class="compare-row"><div class="compare-label">Saída</div><div class="compare-track"><div class="compare-fill" style="width:'+pctS+'%; background:var(--accent)">R$ '+fmtBRL(g.saida)+'</div></div></div>' +
+      '<div class="compare-row"><div class="compare-label">Entrada</div><div class="compare-track"><div class="compare-fill" style="width:'+pctE+'%; background:var(--chart-2)">R$ '+fmtBRL(g.entrada)+'</div></div></div>' +
+      '</div>';
+  }).join("");
+}
+
+// soma, por todas as filiais, isentas (isenta+outras)/tributadas (base) do grupo x.15x e ST (contábil) do grupo x.40x
+function sumTransferSplit(codesTrib, codesSt, tipo){
+  var isentas=0, tributadas=0, st=0;
+  state.filiais.forEach(function(f){
+    var reg = regFor(f.id, state.selPeriodo);
+    (reg[tipo]||[]).forEach(function(r){
+      if(codesTrib.indexOf(r.cfop) > -1){
+        tributadas += parseNumberBR(r.base);
+        isentas += parseNumberBR(r.isenta) + parseNumberBR(r.outras);
+      } else if(codesSt.indexOf(r.cfop) > -1){
+        st += parseNumberBR(r.contabil);
+      }
+    });
+  });
+  return {isentas:isentas, tributadas:tributadas, st:st};
+}
+
 function renderReconciliacao(){
   var periodo = state.selPeriodo;
   var totais = {outEstado:0, inEstado:0, outInter:0, inInter:0, icmsDeb:0, icmsCred:0};
@@ -1500,11 +1538,12 @@ function renderReconciliacao(){
     diffValue: diffEstado,
     diffLabel: okEstado ? "diferença" : "falta reconciliar"
   });
-  renderCompareBars("compareEstado", [
-    {label:"Saída — Trib./Isento", value:t.outEstadoTrib, color:"var(--accent)"},
-    {label:"Saída — ST", value:t.outEstadoSt, color:"var(--accent)", opacity:.5},
-    {label:"Entrada — Trib./Isento", value:t.inEstadoTrib, color:"var(--chart-2)"},
-    {label:"Entrada — ST", value:t.inEstadoSt, color:"var(--chart-2)", opacity:.5}
+  var estadoOut = sumTransferSplit(TRANSFER_CODES_OUT_ESTADO_TRIB, TRANSFER_CODES_OUT_ESTADO_ST, "saidas");
+  var estadoIn  = sumTransferSplit(TRANSFER_CODES_IN_ESTADO_TRIB, TRANSFER_CODES_IN_ESTADO_ST, "entradas");
+  renderCompareGrouped("compareEstado", [
+    {label:"Isentas", saida:estadoOut.isentas, entrada:estadoIn.isentas},
+    {label:"Tributadas", saida:estadoOut.tributadas, entrada:estadoIn.tributadas},
+    {label:"ST", saida:estadoOut.st, entrada:estadoIn.st}
   ]);
 
   var diffInter = totais.icmsDeb - totais.icmsCred;
@@ -1516,11 +1555,12 @@ function renderReconciliacao(){
     diffValue: diffInter,
     diffLabel: okInter ? "diferença" : "falta reconciliar"
   });
-  renderCompareBars("compareInterValor", [
-    {label:"Saída — Trib./Isento", value:t.outInterTrib, color:"var(--accent)"},
-    {label:"Saída — ST", value:t.outInterSt, color:"var(--accent)", opacity:.5},
-    {label:"Entrada — Trib./Isento", value:t.inInterTrib, color:"var(--chart-2)"},
-    {label:"Entrada — ST", value:t.inInterSt, color:"var(--chart-2)", opacity:.5}
+  var interOut = sumTransferSplit(TRANSFER_CODES_OUT_INTER_TRIB, TRANSFER_CODES_OUT_INTER_ST, "saidas");
+  var interIn  = sumTransferSplit(TRANSFER_CODES_IN_INTER_TRIB, TRANSFER_CODES_IN_INTER_ST, "entradas");
+  renderCompareGrouped("compareInterValor", [
+    {label:"Isentas", saida:interOut.isentas, entrada:interIn.isentas},
+    {label:"Tributadas", saida:interOut.tributadas, entrada:interIn.tributadas},
+    {label:"ST", saida:interOut.st, entrada:interIn.st}
   ]);
   renderCompareBars("compareInterIcms", [
     {label:"Débito", value:totais.icmsDeb, color:"var(--accent)"},
@@ -1645,9 +1685,11 @@ function renderDonut(containerId, bucket, centerLabel){
   var legend = cats.length ? cats.map(function(c){
     var pct = total>0 ? c.value/total*100 : 0;
     return '<div class="donut-legend-row"><span class="donut-legend-swatch" style="background:'+c.color+'"></span>' +
-      '<span class="donut-legend-label">'+escapeHtml(c.label)+'</span>' +
-      '<span class="donut-legend-value">R$ '+fmtBRL(c.value)+'</span>' +
-      '<span class="donut-legend-pct">'+fmtPct(pct)+'</span></div>';
+      '<div class="donut-legend-text">' +
+        '<div class="donut-legend-label">'+escapeHtml(c.label)+'</div>' +
+        '<div class="donut-legend-value">R$ '+fmtBRL(c.value)+'</div>' +
+        '<div class="donut-legend-pct">'+fmtPct(pct)+'</div>' +
+      '</div></div>';
   }).join("") : '<div class="helptext" style="margin:0;">Sem movimento no período.</div>';
 
   el.innerHTML =
@@ -1657,18 +1699,37 @@ function renderDonut(containerId, bucket, centerLabel){
     '<div class="donut-legend">'+legend+'</div>';
 }
 
-function renderPairChart(containerId, perFilial){
+function fmtCompact(n){
+  n = n || 0;
+  var abs = Math.abs(n);
+  if(abs >= 1e6) return (n/1e6).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+" mi";
+  if(abs >= 1e3) return (n/1e3).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:0})+" mil";
+  return fmtBRL(n);
+}
+
+function renderPairChart(plotId, labelsId, perFilial){
   var maxVal = Math.max.apply(null, perFilial.map(function(x){ return Math.max(x.compras.total, x.vendas.total); }).concat([0.01]));
-  document.getElementById(containerId).innerHTML = perFilial.map(function(x){
+
+  var gridlines = [1, 0.5, 0].map(function(frac){
+    return '<div class="vbar-gridline" style="top:'+((1-frac)*100)+'%"><span class="tick">R$ '+fmtCompact(maxVal*frac)+'</span></div>';
+  }).join("");
+
+  var bars = perFilial.map(function(x){
     if(x.compras.total<=0 && x.vendas.total<=0){
-      return '<div class="pair-block"><div class="pair-block-label">'+escapeHtml(x.filial.nome)+'</div><div class="pair-empty">sem movimento</div></div>';
+      return '<div class="vbar-group"><div class="vbar-empty-mark">sem<br>movimento</div></div>';
     }
-    var pctC = Math.max(1, x.compras.total/maxVal*100);
-    var pctV = Math.max(1, x.vendas.total/maxVal*100);
-    return '<div class="pair-block"><div class="pair-block-label">'+escapeHtml(x.filial.nome)+'</div>' +
-      '<div class="pair-line" title="Compras: R$ '+fmtBRL(x.compras.total)+'"><div class="pair-track"><div class="pair-fill compras" style="width:'+pctC+'%"></div></div><div class="pair-value">R$ '+fmtBRL(x.compras.total)+'</div></div>' +
-      '<div class="pair-line" title="Vendas: R$ '+fmtBRL(x.vendas.total)+'"><div class="pair-track"><div class="pair-fill vendas" style="width:'+pctV+'%"></div></div><div class="pair-value">R$ '+fmtBRL(x.vendas.total)+'</div></div>' +
-      '</div>';
+    var hC = Math.max(1, x.compras.total/maxVal*100);
+    var hV = Math.max(1, x.vendas.total/maxVal*100);
+    return '<div class="vbar-group">' +
+      '<div class="vbar-cols">' +
+        '<div class="vbar-col compras" style="height:'+hC+'%" title="Compras — '+escapeHtml(x.filial.nome)+': R$ '+fmtBRL(x.compras.total)+'"></div>' +
+        '<div class="vbar-col vendas" style="height:'+hV+'%" title="Vendas — '+escapeHtml(x.filial.nome)+': R$ '+fmtBRL(x.vendas.total)+'"></div>' +
+      '</div></div>';
+  }).join("");
+
+  document.getElementById(plotId).innerHTML = gridlines + '<div class="vbar-bars">'+bars+'</div>';
+  document.getElementById(labelsId).innerHTML = perFilial.map(function(x){
+    return '<div class="vbar-label">'+escapeHtml(x.filial.nome)+'</div>';
   }).join("");
 }
 
@@ -1735,7 +1796,7 @@ function renderDashboard(){
 
   renderDonut("donutCompras", totalCompras, "Compras");
   renderDonut("donutVendas", totalVendas, "Vendas");
-  renderPairChart("pairChart", perFilial);
+  renderPairChart("pairChartPlot", "pairChartLabels", perFilial);
 
   var rowsHtml = perFilial.map(function(x){ return dashTableRow(x.filial.nome, x, false); }).join("") +
     dashTableRow("Total (grupo)", {compras:totalCompras, vendas:totalVendas, icmsDeb:totalIcmsDeb, icmsCred:totalIcmsCred}, true);
