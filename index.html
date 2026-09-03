@@ -806,7 +806,7 @@ function defaultState(){
    valores de um período/filial já lançado são corrigidos/atualizados — nesse
    caso o registro salvo é substituído pelo novo, para que a correção chegue
    a quem já tinha aberto a ferramenta antes. */
-var SEED_VERSION = 5;
+var SEED_VERSION = 6;
 var SEED_FILIAIS = [
   {id:"matriz", nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"},
   {id:"filial_0002", nome:"Filial 0002", uf:"", cnpj:"19.043.440/0002-35", ie:"720035126118"},
@@ -880,8 +880,8 @@ var SEED_REGISTROS = {
       {cfop:"2202", contabil:254974.50, base:238416.85, imposto:27403.54, isenta:782.22, outras:15775.43},
       {cfop:"2353", contabil:966220.17, base:577385.10, imposto:69285.94, isenta:0, outras:388835.07},
       {cfop:"2403", contabil:2306841.72, base:0, imposto:0, isenta:0, outras:2058595.80},
-      {cfop:"2409", contabil:107767.72, base:0, imposto:0, isenta:0, outras:96281.45},
-      {cfop:"2411", contabil:11526.96, base:0, imposto:0, isenta:0, outras:9537.39},
+      {cfop:"2409", contabil:107767.72, base:128196.37, imposto:11486.27, isenta:0, outras:0},
+      {cfop:"2411", contabil:10364.78, base:13612.03, imposto:1989.57, isenta:0, outras:0},
       {cfop:"2551", contabil:6954.55, base:0, imposto:0, isenta:0, outras:6954.55},
       {cfop:"2556", contabil:97110.01, base:2287, imposto:91.48, isenta:0, outras:94696.67},
       {cfop:"2910", contabil:209500.35, base:159956.29, imposto:19180.06, isenta:0, outras:49176.38},
@@ -986,7 +986,7 @@ var SEED_REGISTROS = {
       {cfop:"5949", contabil:55848.28, base:2514.03, imposto:436.39, isenta:50323.26, outras:3010.99},
       {cfop:"6102", contabil:82933.61, base:82933.61, imposto:9951.99, isenta:0, outras:0},
       {cfop:"6202", contabil:123.62, base:72.11, imposto:8.65, isenta:0, outras:51.51},
-      {cfop:"6403", contabil:13014.94, base:0, imposto:0, isenta:0, outras:10435.24}
+      {cfop:"6403", contabil:13014.94, base:17417.91, imposto:2579.70, isenta:0, outras:0}
     ]
   }
 };
