@@ -806,13 +806,14 @@ function defaultState(){
    valores de um período/filial já lançado são corrigidos/atualizados — nesse
    caso o registro salvo é substituído pelo novo, para que a correção chegue
    a quem já tinha aberto a ferramenta antes. */
-var SEED_VERSION = 4;
+var SEED_VERSION = 5;
 var SEED_FILIAIS = [
   {id:"matriz", nome:"Matriz", uf:"SP", cnpj:"19.043.440/0001-54", ie:"142894083117"},
   {id:"filial_0002", nome:"Filial 0002", uf:"", cnpj:"19.043.440/0002-35", ie:"720035126118"},
   {id:"filial_0003", nome:"Filial 0003", uf:"MG", cnpj:"19.043.440/0003-16", ie:"0033160300030"},
   {id:"filial_zl", nome:"Filial ZL 004", uf:"", cnpj:"19.043.440/0004-05", ie:"130721189116"},
-  {id:"filial_0005", nome:"Filial 0005", uf:"SP", cnpj:"19.043.440/0005-88", ie:"181589998117"}
+  {id:"filial_0005", nome:"Filial 0005", uf:"SP", cnpj:"19.043.440/0005-88", ie:"181589998117"},
+  {id:"filial_ccpv", nome:"Filial CCPV", uf:"", cnpj:"", ie:""}
 ];
 var SEED_PERIODOS = [
   {id:"2026-08", label:"Agosto/2026"}
@@ -952,6 +953,40 @@ var SEED_REGISTROS = {
       {cfop:"5409", contabil:15949.38, base:0, imposto:0, isenta:0, outras:15949.38},
       {cfop:"5910", contabil:0.13, base:0, imposto:0, isenta:0.13, outras:0},
       {cfop:"5949", contabil:3535.08, base:1234.73, imposto:209.50, isenta:0, outras:2300.35}
+    ]
+  },
+  "filial_ccpv|2026-08": {
+    entradas: [
+      {cfop:"1102", contabil:672352.30, base:375887.26, imposto:61683.78, isenta:21273.20, outras:275191.84},
+      {cfop:"1152", contabil:8758393.18, base:0, imposto:0, isenta:0, outras:8758393.18},
+      {cfop:"1202", contabil:241002.60, base:162486.31, imposto:27747.74, isenta:2685.19, outras:75831.10},
+      {cfop:"1253", contabil:7446.77, base:0, imposto:0, isenta:0, outras:7446.77},
+      {cfop:"1303", contabil:1786.36, base:0, imposto:0, isenta:0, outras:1786.36},
+      {cfop:"1353", contabil:309171.46, base:5200, imposto:624, isenta:0, outras:303971.46},
+      {cfop:"1403", contabil:214145.28, base:0, imposto:0, isenta:0, outras:168928},
+      {cfop:"1409", contabil:1580151.98, base:0, imposto:0, isenta:0, outras:1580151.98},
+      {cfop:"1411", contabil:32240.84, base:0, imposto:0, isenta:0, outras:32240.84},
+      {cfop:"1556", contabil:5466.03, base:0, imposto:0, isenta:0, outras:5466.03},
+      {cfop:"1653", contabil:82613.62, base:0, imposto:0, isenta:0, outras:82613.62},
+      {cfop:"1910", contabil:2602.80, base:1012.23, imposto:182.20, isenta:0, outras:1590.57},
+      {cfop:"1920", contabil:6309.24, base:0, imposto:0, isenta:0, outras:6309.24},
+      {cfop:"1933", contabil:28171.46, base:0, imposto:0, isenta:0, outras:28171.46},
+      {cfop:"1949", contabil:62659.05, base:0, imposto:0, isenta:0, outras:62659.05},
+      {cfop:"2102", contabil:866938.68, base:829849.71, imposto:99581.96, isenta:0, outras:37088.97},
+      {cfop:"2202", contabil:1418.30, base:1418.30, imposto:170.19, isenta:0, outras:0},
+      {cfop:"2920", contabil:10720, base:0, imposto:0, isenta:0, outras:10720}
+    ],
+    saidas: [
+      {cfop:"5102", contabil:14342782.91, base:9834637.02, imposto:1690157.05, isenta:185209.06, outras:4372965.61},
+      {cfop:"5152", contabil:173710.05, base:0, imposto:0, isenta:0, outras:173710.05},
+      {cfop:"5405", contabil:2028227.61, base:0, imposto:0, isenta:0, outras:2028227.61},
+      {cfop:"5409", contabil:92510.56, base:0, imposto:0, isenta:0, outras:92510.56},
+      {cfop:"5910", contabil:0.03, base:0, imposto:0, isenta:0.03, outras:0},
+      {cfop:"5921", contabil:6223.40, base:0, imposto:0, isenta:6223.40, outras:0},
+      {cfop:"5949", contabil:55848.28, base:2514.03, imposto:436.39, isenta:50323.26, outras:3010.99},
+      {cfop:"6102", contabil:82933.61, base:82933.61, imposto:9951.99, isenta:0, outras:0},
+      {cfop:"6202", contabil:123.62, base:72.11, imposto:8.65, isenta:0, outras:51.51},
+      {cfop:"6403", contabil:13014.94, base:0, imposto:0, isenta:0, outras:10435.24}
     ]
   }
 };
